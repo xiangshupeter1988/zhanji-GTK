@@ -1186,19 +1186,20 @@ async function init() {
   }
 }
 
-// ============ AUTH INIT ON LOAD ============
-(async function() {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session && session.user) {
-      currentUser = session.user;
-      onAuthSuccess();
-    }
-    
-    // 监听认证状态变化
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session && session.user) {
-        currentUser = session.user;
-      } else {
-        currentUser = null;
+// ============ 补充缺失的核心函数 ============
+
+// 标签切换函数
+function switchTab(tabName) {
+  // 隐藏所有页面
+  document.querySelectorAll('.page').forEach(page => {
+    page.classList.remove('active');
+  });
+  
+  // 取消所有标签激活状态
+  document.querySelectorAll('.tab-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // 显示选中的页面和标签
+  document.getElementById('page' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+  document.querySelector(`.tab-item[data-tab="${tab
