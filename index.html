@@ -1,305 +1,1445 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>展会智能记录助手</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/dist/bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#3B82F6',
-            secondary: '#10B981',
-            accent: '#8B5CF6',
-            warning: '#F59E0B',
-            danger: '#EF4444'
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    * {
-      -webkit-tap-highlight-color: transparent;
-      box-sizing: border-box;
-    }
-    body {
-      background: #f8fafc;
-      padding-bottom: 2rem;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-      overflow: hidden;
-    }
-    .btn {
-      font-weight: 600;
-      border-radius: 12px;
-      padding: 12px;
-      transition: 0.2s;
-      border: none;
-    }
-    .btn:active {
-      transform: scale(0.96);
-    }
-    img, video, canvas {
-      max-width: 100%;
-      border-radius: 10px;
-    }
-  </style>
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="展记">
+<meta name="theme-color" content="#0f1f3d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="展记">
+<title>展记 — 参展记录工具</title>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi5bGV6K6wIC0g5Y+C5bGV6K6w5b2V5bel5YW3Iiwic2hvcnRfbmFtZSI6IuWxleiusCIsImRlc2NyaXB0aW9uIjoi5bGV5Lya5Y+C5bGV6K6w5b2V5bel5YW377yM6ZuG5ZCI5ouN54Wn44CB5b2V6Z+z44CB5b2V5YOP44CB5a+56K+d6K6w5b2VIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwZjFmM2QiLCJ0aGVtZV9jb2xvciI6IiMwZjFmM2QiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyB2aWV3Qm94PScwIDAgMTkyIDE5Mic+JTNDcmVjdCB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5Micgcng9JzQwJyBmaWxsPSclMjMxYTM2NWQnLyUzRSUzQ3RleHQgeD0nOTYnIHk9JzExNicgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1zaXplPSc4MCcgZmlsbD0nJTIzZThhODM4JyBmb250LWZhbWlseT0nc2Fucy1zZXJpYicgZm9udC13ZWlnaHQ9Jzc1MCclM0XlsZUlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
+<style>
+/* === RESET & BASE === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a365d;--primary-light:#2a4a7f;--primary-dark:#0f1f3d;
+  --accent:#e8a838;--accent-glow:#f4c562;
+  --bg:#f2f2f7;--card:#ffffff;--card-border:rgba(0,0,0,.06);
+  --text:#1c1c1e;--text2:#636366;--text3:#aeaeb2;
+  --danger:#ff3b30;--success:#34c759;--blue:#007aff;
+  --glass:rgba(255,255,255,.72);--glass-border:rgba(255,255,255,.35);
+  --safe-top:env(safe-area-inset-top,20px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --tab-h:82px;--header-h:56px;
+  --radius:14px;--radius-lg:20px;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",sans-serif;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+body{position:relative}
+button{font:inherit;border:none;background:none;cursor:pointer;-webkit-appearance:none}
+input,textarea,select{font:inherit;border:none;outline:none;-webkit-appearance:none;background:transparent}
+img,video{display:block;max-width:100%}
 
-<body class="text-gray-800">
-<header class="bg-gradient-to-r from-primary to-accent text-white p-5 text-center font-bold text-xl sticky top-0 z-10 shadow-md">
-  展会智能记录助手 · AI版
+/* === HEADER === */
+.app-header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding-top:var(--safe-top);
+  background:rgba(15,31,61,.88);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.header-inner{
+  height:var(--header-h);display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+}
+.header-title{color:#fff;font-size:17px;font-weight:600;letter-spacing:-.2px;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-btn{color:var(--accent);font-size:15px;font-weight:500;padding:8px;min-width:44px;display:flex;align-items:center;justify-content:center}
+.header-btn svg{width:22px;height:22px}
+.header-badge{
+  display:inline-block;background:var(--accent);color:var(--primary-dark);
+  font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;
+  margin-left:4px;vertical-align:middle;
+}
+.header-expo-name{
+  font-size:11px;color:var(--accent);opacity:.9;
+  display:block;text-align:center;padding-bottom:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.header-expo-name:empty{display:none;padding:0}
+
+/* === TAB BAR === */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  padding-bottom:var(--safe-bottom);
+  background:rgba(15,31,61,.92);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.tab-bar-inner{display:flex;height:50px;align-items:stretch}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  color:rgba(255,255,255,.45);transition:color .2s;position:relative;
+}
+.tab-item.active{color:var(--accent)}
+.tab-item svg{width:24px;height:24px;transition:transform .2s}
+.tab-item.active svg{transform:scale(1.08)}
+.tab-item span{font-size:10px;font-weight:500;letter-spacing:.1px}
+
+/* === PAGES === */
+.page-container{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  overflow:hidden;
+}
+.page{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  padding-top:calc(var(--safe-top) + var(--header-h));
+  padding-bottom:calc(var(--tab-h) + var(--safe-bottom));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  opacity:0;pointer-events:none;
+  transition:opacity .28s ease,transform .28s ease;
+  transform:translateX(12px);
+}
+.page.active{opacity:1;pointer-events:auto;transform:translateX(0)}
+.page-pad{padding:16px 16px 24px}
+
+/* === EXPO LIST (HOME) === */
+.expo-card{
+  background:var(--card);border-radius:var(--radius-lg);
+  padding:18px;margin-bottom:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.03);
+  border:1px solid var(--card-border);
+  transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;
+}
+.expo-card::before{
+  content:'';position:absolute;top:0;left:0;width:4px;height:100%;
+  background:linear-gradient(180deg,var(--accent),var(--primary-light));border-radius:0 4px 4px 0;
+}
+.expo-card:active{transform:scale(.98)}
+.expo-card-name{font-size:17px;font-weight:600;margin-bottom:4px;padding-left:8px}
+.expo-card-info{font-size:13px;color:var(--text2);padding-left:8px;margin-bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.expo-card-stats{display:flex;gap:8px;padding-left:8px;flex-wrap:wrap}
+.stat-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--bg);border-radius:8px;padding:4px 10px;
+  font-size:12px;color:var(--text2);font-weight:500;
+}
+.stat-chip svg{width:14px;height:14px;opacity:.6}
+.expo-card-actions{position:absolute;top:14px;right:14px;display:flex;gap:6px}
+.expo-card-actions button{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+}
+.expo-card-actions button svg{width:16px;height:16px;color:var(--text2)}
+.selected-indicator{
+  position:absolute;top:14px;right:14px;
+  background:var(--accent);color:var(--primary-dark);
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;
+}
+
+/* === EMPTY STATE === */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 32px;text-align:center;
+}
+.empty-state svg{width:80px;height:80px;color:var(--text3);opacity:.5;margin-bottom:16px}
+.empty-state h3{font-size:18px;font-weight:600;color:var(--text2);margin-bottom:8px}
+.empty-state p{font-size:14px;color:var(--text3);line-height:1.5;max-width:260px}
+
+/* === MODAL === */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.4);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-sheet{
+  width:100%;max-width:500px;max-height:88vh;
+  background:var(--card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);
+  overflow:hidden;display:flex;flex-direction:column;
+  padding-bottom:var(--safe-bottom);
+}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:5px;border-radius:3px;background:var(--text3);opacity:.3;margin:10px auto 0}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--card-border)}
+.modal-header h3{font-size:17px;font-weight:600}
+.modal-body{flex:1;overflow-y:auto;padding:20px}
+.modal-close{color:var(--blue);font-size:15px;font-weight:500;padding:4px 8px}
+
+/* === FORM === */
+.form-group{margin-bottom:18px}
+.form-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{
+  width:100%;padding:12px 14px;
+  background:var(--bg);border-radius:12px;
+  font-size:16px;color:var(--text);
+  border:1px solid transparent;transition:border .2s;
+}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+textarea.form-input{min-height:80px;resize:vertical;line-height:1.5}
+.form-btn{
+  width:100%;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff;font-size:16px;font-weight:600;
+  letter-spacing:.2px;
+  transition:opacity .2s,transform .15s;
+}
+.form-btn:active{opacity:.85;transform:scale(.98)}
+.form-btn.danger{background:linear-gradient(135deg,var(--danger),#ff6259)}
+
+/* === CAMERA / MEDIA PAGES === */
+.media-viewport{
+  position:relative;
+  width:100%;aspect-ratio:3/4;max-height:55vh;
+  background:#000;border-radius:var(--radius-lg);overflow:hidden;
+  margin:0 auto 16px;
+}
+.media-viewport video,.media-viewport canvas,.media-viewport img{
+  width:100%;height:100%;object-fit:cover;
+}
+.media-controls{display:flex;align-items:center;justify-content:center;gap:24px;padding:12px 0}
+.capture-btn{
+  width:72px;height:72px;border-radius:50%;
+  border:4px solid #fff;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,background .2s;position:relative;
+}
+.capture-btn:active{transform:scale(.92)}
+.capture-btn-inner{width:58px;height:58px;border-radius:50%;background:#fff;transition:all .2s}
+.capture-btn.recording .capture-btn-inner{width:28px;height:28px;border-radius:8px;background:var(--danger)}
+.media-ctrl-btn{
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+}
+.media-ctrl-btn svg{width:22px;height:22px}
+
+/* === AUDIO RECORDER === */
+.audio-recorder{display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+.audio-timer{font-size:52px;font-weight:200;letter-spacing:2px;color:var(--primary);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.audio-status{font-size:14px;color:var(--text2);margin-bottom:32px;font-weight:500}
+.audio-wave{display:flex;align-items:center;gap:3px;height:60px;margin-bottom:32px}
+.audio-wave-bar{
+  width:4px;border-radius:2px;background:var(--accent);
+  animation:wave 1s ease-in-out infinite;
+  opacity:.3;height:20%;
+}
+.audio-wave.active .audio-wave-bar{opacity:1}
+@keyframes wave{0%,100%{height:20%}50%{height:100%}}
+.audio-controls{display:flex;align-items:center;gap:24px}
+
+/* === RECORD LIST ITEMS === */
+.record-item{
+  background:var(--card);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:10px;
+  border:1px solid var(--card-border);
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+  display:flex;align-items:center;gap:12px;
+}
+.record-item-thumb{
+  width:52px;height:52px;border-radius:10px;overflow:hidden;
+  background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;
+}
+.record-item-thumb img,.record-item-thumb video{width:100%;height:100%;object-fit:cover}
+.record-item-thumb svg{width:24px;height:24px;color:var(--text3)}
+.record-item-info{flex:1;min-width:0}
+.record-item-title{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.record-item-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.record-item-del{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--danger);flex-shrink:0;
+}
+.record-item-del svg{width:18px;height:18px}
+
+/* === CONTACT CARD === */
+.contact-card{
+  background:var(--card);border-radius:var(--radius-lg);
+  padding:18px;margin-bottom:12px;
+  border:1px solid var(--card-border);
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.contact-card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.contact-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:600;flex-shrink:0;
+}
+.contact-name{font-size:16px;font-weight:600}
+.contact-company{font-size:13px;color:var(--text2)}
+.contact-details{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--card-border)}
+.contact-detail{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.contact-detail svg{width:15px;height:15px;opacity:.5;flex-shrink:0}
+.contact-notes{
+  margin-top:10px;padding:10px 12px;
+  background:var(--bg);border-radius:10px;
+  font-size:13px;line-height:1.6;color:var(--text);
+}
+.contact-card-actions{display:flex;gap:8px;margin-top:12px}
+.contact-card-actions button{
+  flex:1;padding:8px;border-radius:10px;
+  font-size:13px;font-weight:500;text-align:center;
+}
+
+/* === DETAIL PAGE === */
+.detail-section{margin-bottom:24px}
+.detail-section-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;padding-left:4px}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.detail-grid-item{aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--bg);position:relative}
+.detail-grid-item img,.detail-grid-item video{width:100%;height:100%;object-fit:cover}
+.detail-grid-item .play-badge{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.3);
+}
+.detail-grid-item .play-badge svg{width:32px;height:32px;color:#fff}
+
+/* === EXPORT === */
+.export-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-glow));
+  color:var(--primary-dark);font-size:15px;font-weight:600;
+  margin-top:8px;
+}
+.export-btn svg{width:20px;height:20px}
+
+/* === PHOTO PREVIEW CONFIRM === */
+.preview-overlay{
+  position:fixed;inset:0;z-index:250;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.preview-overlay.show{opacity:1;pointer-events:auto}
+.preview-overlay img,.preview-overlay video{max-width:100%;max-height:70vh;object-fit:contain;border-radius:12px}
+.preview-actions{display:flex;gap:16px;margin-top:24px}
+.preview-actions button{
+  padding:12px 32px;border-radius:14px;font-size:15px;font-weight:600;
+}
+.preview-actions .confirm{background:var(--accent);color:var(--primary-dark)}
+.preview-actions .cancel{background:rgba(255,255,255,.15);color:#fff}
+
+/* === MISC === */
+.fab{
+  position:fixed;z-index:90;
+  right:20px;bottom:calc(var(--tab-h) + var(--safe-bottom) + 16px);
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-glow));
+  color:var(--primary-dark);
+  box-shadow:0 4px 16px rgba(232,168,56,.35);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s;
+}
+.fab:active{transform:scale(.9)}
+.fab svg{width:26px;height:26px}
+.toast{
+  position:fixed;top:calc(var(--safe-top) + var(--header-h) + 12px);
+  left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--primary);color:#fff;
+  padding:10px 20px;border-radius:12px;
+  font-size:14px;font-weight:500;
+  opacity:0;transition:all .3s;z-index:300;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px}
+.section-header h2{font-size:22px;font-weight:700;letter-spacing:-.3px}
+
+/* scrollbar */
+.page::-webkit-scrollbar{display:none}
+.modal-body::-webkit-scrollbar{display:none}
+
+/* === TRANSCRIPT === */
+.transcript-box{
+  margin-top:12px;padding:12px;
+  background:var(--bg);border-radius:12px;
+  max-height:120px;overflow-y:auto;
+  font-size:13px;line-height:1.6;color:var(--text);
+  border:1px solid var(--card-border);
+}
+.transcript-box:empty::before{content:'语音识别中...';color:var(--text3)}
+.transcript-box.idle:empty::before{content:'转写文本将在此显示';color:var(--text3)}
+.transcript-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;color:var(--success);font-weight:500;
+  margin-left:8px;
+}
+.transcript-badge svg{width:12px;height:12px}
+
+/* === PHOTO STAR === */
+.photo-star{
+  position:absolute;top:6px;right:6px;z-index:5;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.6);transition:all .2s;
+}
+.photo-star.important{color:var(--accent);background:rgba(0,0,0,.6)}
+.photo-star svg{width:16px;height:16px}
+.photo-important{border:2px solid var(--accent)!important;box-shadow:0 0 8px rgba(232,168,56,.3)}
+
+/* === EXPORT PROGRESS === */
+.export-progress{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;gap:16px;
+}
+.export-progress-spinner{
+  width:48px;height:48px;border:3px solid rgba(255,255,255,.2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.export-progress-text{font-size:15px;font-weight:500}
+
+/* === RECORD TRANSCRIPT PREVIEW === */
+.record-item-transcript{
+  font-size:12px;color:var(--text2);
+  margin-top:3px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  line-height:1.4;
+}
+.edit-transcript-btn{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--blue);flex-shrink:0;
+}
+.edit-transcript-btn svg{width:16px;height:16px}
+
+/* === SEARCH BAR === */
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);border-radius:12px;
+  padding:10px 14px;margin-bottom:14px;
+  border:1px solid var(--card-border);
+  box-shadow:0 1px 3px rgba(0,0,0,.03);
+}
+.search-bar svg{width:18px;height:18px;color:var(--text3);flex-shrink:0}
+.search-bar input{flex:1;font-size:15px;color:var(--text);background:none}
+.search-bar input::placeholder{color:var(--text3)}
+.search-bar button{color:var(--text3);padding:2px;flex-shrink:0}
+.search-bar button svg{width:18px;height:18px}
+
+/* === REALTIME DOT === */
+.realtime-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--success);display:inline-block;
+  margin-right:4px;vertical-align:middle;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* === EXPO CARD CREATOR === */
+.expo-card-creator{font-size:11px;color:var(--text3);padding-left:8px;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+
+/* === DASHBOARD STATS === */
+.dash-stats{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+  margin-bottom:16px;
+}
+.dash-stat{
+  background:var(--card);border-radius:14px;padding:14px;
+  border:1px solid var(--card-border);text-align:center;
+}
+.dash-stat-num{font-size:28px;font-weight:700;color:var(--primary);line-height:1.2}
+.dash-stat-label{font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+/* === QUICK ACTION BAR === */
+.quick-actions{
+  display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;padding-bottom:4px;
+}
+.quick-actions::-webkit-scrollbar{display:none}
+.quick-action{
+  flex-shrink:0;display:flex;align-items:center;gap:6px;
+  padding:10px 16px;border-radius:12px;
+  font-size:13px;font-weight:600;color:#fff;
+  white-space:nowrap;
+}
+.quick-action svg{width:18px;height:18px}
+.quick-action.qa-photo{background:linear-gradient(135deg,#007aff,#5856d6)}
+.quick-action.qa-audio{background:linear-gradient(135deg,#ff9500,#ff3b30)}
+.quick-action.qa-video{background:linear-gradient(135deg,#34c759,#30b0c7)}
+.quick-action.qa-contact{background:linear-gradient(135deg,#af52de,#ff2d55)}
+
+/* === OFFLINE QUEUE BADGE === */
+.offline-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,59,48,.15);color:var(--danger);
+  font-size:11px;font-weight:600;padding:3px 8px;border-radius:8px;
+  margin-left:8px;
+}
+.offline-badge svg{width:12px;height:12px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-inner">
+    <button class="header-btn" id="headerLeft" style="visibility:hidden" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div style="flex:1;overflow:hidden">
+      <div class="header-title" id="headerTitle">展记</div>
+      <div class="header-expo-name" id="headerExpoName"></div>
+    </div>
+    <button class="header-btn" id="headerRight" style="visibility:hidden"></button>
+  </div>
 </header>
 
-<div class="max-w-4xl mx-auto p-4 space-y-5 mt-4">
-
-  <!-- 快速录入 -->
-  <div class="card p-5">
-    <h2 class="text-lg font-bold text-primary mb-3">📝 快速录入</h2>
-    <textarea id="content" 
-      class="w-full border border-gray-200 rounded-lg p-3 h-28 mb-3 text-base"
-      placeholder="请输入文字内容，录音会自动转写在这里"></textarea>
-    <div class="grid grid-cols-2 gap-2">
-      <button onclick="capturePhoto()" class="btn bg-primary text-white">📷 拍照</button>
-      <button onclick="startRecord()" class="btn bg-secondary text-white">🎙️ 录音转文字</button>
-      <button onclick="stopRecord()" class="btn bg-danger text-white">⏹ 停止录音</button>
-      <button onclick="startVideo()" class="btn bg-accent text-white">🎥 录像</button>
-      <button onclick="saveRecord()" class="btn bg-gray-800 text-white col-span-2">💾 保存本条记录</button>
+<!-- PAGES -->
+<div class="page-container">
+  <!-- HOME -->
+  <div class="page active" id="pageHome">
+    <div class="page-pad">
+      <div class="search-bar" id="searchBar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="搜索展会名称、地点..." oninput="filterExpos()">
+        <button id="searchClear" style="display:none" onclick="clearSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></button>
+      </div>
+      <div id="expoListContainer"></div>
     </div>
-    <video id="video" autoplay playsinline class="hidden mt-3"></video>
-    <canvas id="canvas" class="hidden mt-3"></canvas>
   </div>
-
-  <!-- 报告导出 -->
-  <div class="card p-5">
-    <h2 class="text-lg font-bold text-primary mb-3">📊 智能报告导出</h2>
-    <div class="grid grid-cols-2 gap-3">
-      <button onclick="exportDaily()" class="btn bg-warning text-white">📅 导出今日日报</button>
-      <button onclick="exportFull()" class="btn bg-primary text-white">📄 导出展会总报告</button>
+  <!-- EXPO DETAIL -->
+  <div class="page" id="pageDetail">
+    <div class="page-pad" id="detailContent"></div>
+  </div>
+  <!-- PHOTO -->
+  <div class="page" id="pagePhoto">
+    <div class="page-pad">
+      <div class="media-viewport"><video id="photoPreview" autoplay playsinline muted></video><canvas id="photoCanvas" style="display:none"></canvas></div>
+      <div class="media-controls">
+        <button class="media-ctrl-btn" onclick="switchPhotoCamera()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/></svg></button>
+        <button class="capture-btn" onclick="takePhoto()"><div class="capture-btn-inner"></div></button>
+        <div style="width:44px"></div>
+      </div>
+      <div id="photoList"></div>
     </div>
-    <p class="text-xs text-gray-500 mt-2">报告包含：AI总结 + 图片 + 文字 + 机会 + 待办</p>
   </div>
-
-  <!-- 历史记录 -->
-  <div class="card p-5">
-    <h2 class="text-lg font-bold text-primary mb-3">📜 所有记录</h2>
-    <div id="history" class="max-h-[400px] overflow-y-auto space-y-4"></div>
+  <!-- AUDIO -->
+  <div class="page" id="pageAudio">
+    <div class="page-pad">
+      <div class="audio-recorder">
+        <div class="audio-timer" id="audioTimer">00:00</div>
+        <div class="audio-status" id="audioStatus">点击开始录音</div>
+        <div class="audio-wave" id="audioWave"></div>
+        <div class="audio-controls">
+          <button class="media-ctrl-btn" id="audioPauseBtn" style="display:none" onclick="pauseAudio()"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></button>
+          <button class="capture-btn" id="audioRecBtn" onclick="toggleAudio()"><div class="capture-btn-inner"></div></button>
+          <div style="width:44px"></div>
+        </div>
+      </div>
+      <div class="transcript-box idle" id="audioTranscript"></div>
+      <div id="audioList"></div>
+    </div>
+  </div>
+  <!-- VIDEO -->
+  <div class="page" id="pageVideo">
+    <div class="page-pad">
+      <div class="media-viewport"><video id="videoPreview" autoplay playsinline muted></video></div>
+      <div class="media-controls">
+        <button class="media-ctrl-btn" onclick="switchVideoCamera()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/></svg></button>
+        <button class="capture-btn" id="videoRecBtn" onclick="toggleVideo()"><div class="capture-btn-inner"></div></button>
+        <div class="media-ctrl-btn" id="videoTimerDisplay" style="font-size:13px;font-weight:600;color:var(--danger);opacity:0">00:00</div>
+      </div>
+      <div class="transcript-box idle" id="videoTranscript"></div>
+      <div id="videoList"></div>
+    </div>
+  </div>
+  <!-- CONTACTS -->
+  <div class="page" id="pageContact">
+    <div class="page-pad" id="contactListContainer"></div>
   </div>
 </div>
 
-<script>
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const content = document.getElementById('content');
-let mediaRecorder;
-let audioStream;
-let records = JSON.parse(localStorage.getItem('expo-records') || '[]');
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-item active" data-tab="home" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      <span>展会</span>
+    </button>
+    <button class="tab-item" data-tab="photo" onclick="switchTab('photo')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>拍照</span>
+    </button>
+    <button class="tab-item" data-tab="audio" onclick="switchTab('audio')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <span>录音</span>
+    </button>
+    <button class="tab-item" data-tab="video" onclick="switchTab('video')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      <span>录像</span>
+    </button>
+    <button class="tab-item" data-tab="contact" onclick="switchTab('contact')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>对话</span>
+    </button>
+  </div>
+</nav>
 
-// 拍照
-function capturePhoto() {
-  video.classList.remove('hidden');
-  canvas.classList.add('hidden');
-  navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-    video.srcObject = stream;
-    setTimeout(() => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0);
-      stream.getTracks().forEach(t => t.stop());
-      video.classList.add('hidden');
-      canvas.classList.remove('hidden');
-    }, 800);
-  }).catch(err => alert("请允许相机权限"));
-}
+<!-- FAB (on home) -->
+<button class="fab" id="homeFab" onclick="showNewExpoModal()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
 
-// 录音 + 实时转文字
-function startRecord() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert("当前浏览器不支持语音转文字");
-    return;
-  }
-  const rec = new SpeechRecognition();
-  rec.lang = 'zh-CN';
-  rec.continuous = true;
-  rec.interimResults = false;
-  rec.onresult = (e) => {
-    content.value = e.results[0][0].transcript;
-  };
-  rec.start();
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
-    audioStream = s;
-    mediaRecorder = new MediaRecorder(s);
-    mediaRecorder.start();
-  });
-}
-
-function stopRecord() {
-  if (mediaRecorder) mediaRecorder.stop();
-  if (audioStream) audioStream.getTracks().forEach(t => t.stop());
-}
-
-// 录像
-function startVideo() {
-  video.classList.remove('hidden');
-  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-    video.srcObject = stream;
-    setTimeout(() => {
-      stream.getTracks().forEach(t => t.stop());
-      video.classList.add('hidden');
-      alert("录像已完成（演示模式）");
-    }, 3000);
-  }).catch(err => alert("请允许摄像头权限"));
-}
-
-// 保存
-function saveRecord() {
-  if (!content.value && !canvas.toDataURL('image/jpeg')) {
-    alert("请输入内容或拍照");
-    return;
-  }
-  const item = {
-    time: new Date().toISOString(),
-    content: content.value,
-    photo: canvas.classList.contains('hidden') ? '' : canvas.toDataURL('image/jpeg')
-  };
-  records.unshift(item);
-  localStorage.setItem('expo-records', JSON.stringify(records));
-  content.value = '';
-  canvas.classList.add('hidden');
-  renderHistory();
-  alert("✅ 保存成功！");
-}
-
-// 渲染历史
-function renderHistory() {
-  const dom = document.getElementById('history');
-  dom.innerHTML = records.map((r, i) => `
-    <div class="border-b border-gray-100 pb-3">
-      <div class="text-xs text-gray-400">${new Date(r.time).toLocaleString()}</div>
-      <div class="mt-1 text-base">${r.content}</div>
-      ${r.photo ? `<img src="${r.photo}" class="mt-2 max-h-[200px] object-contain">` : ''}
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h3 id="modalTitle">新建展会</h3>
+      <button class="modal-close" onclick="closeModal()">关闭</button>
     </div>
-  `).join('');
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- PHOTO PREVIEW -->
+<div class="preview-overlay" id="previewOverlay">
+  <img id="previewImage" src="">
+  <div class="preview-actions">
+    <button class="cancel" onclick="cancelPreview()">重拍</button>
+    <button class="confirm" onclick="confirmPhoto()">保存</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MEDIA FULL PREVIEW -->
+<div class="preview-overlay" id="mediaViewOverlay" onclick="closeMediaView()">
+  <img id="mediaViewImg" style="display:none" src="">
+  <video id="mediaViewVideo" style="display:none" controls playsinline></video>
+  <audio id="mediaViewAudio" style="display:none" controls></audio>
+</div>
+
+<script>
+// ============================================================
+// 本地存储核心
+// ============================================================
+function getLocal(key) {
+  try { return JSON.parse(localStorage.getItem('expoApp_' + key) || 'null') || []; }
+  catch { return []; }
+}
+function setLocal(key, data) {
+  localStorage.setItem('expoApp_' + key, JSON.stringify(data));
 }
 
-// ======================================
-// 真实免费可用 AI 接口
-// ======================================
-async function aiSummary(allText) {
-  try {
-    const resp = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer "
-      },
-      body: JSON.stringify({
-        model: "glm-4",
-        messages: [{
-          role: "user",
-          content: `你是专业展会分析师，根据下面内容生成：
-1. 展会趋势总结（100字）
-2. 潜在合作机会（3条）
-3. TO DO 待办清单（3条）
-内容：${allText}`
-        }]
-      })
-    });
-    const data = await resp.json();
-    return data.choices?.[0]?.message?.content || "AI生成失败，使用默认总结";
-  } catch (e) {
-    return `【展会趋势总结】
-本次展会涉及多品类产品对接，行业关注度高，新技术与合作需求旺盛。
+// 生成唯一ID
+function uuid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
 
-【潜在合作机会】
-1. 多家客户表达合作意向
-2. 新产品市场反馈良好
-3. 可拓展区域代理商
+// ============================================================
+// 本地数据库方法
+// ============================================================
+async function dbGetAll(table) {
+  return getLocal(table);
+}
+async function dbGetByExpo(table, expoId) {
+  return getLocal(table).filter(item => item.expo_id === expoId);
+}
+async function dbInsert(table, data) {
+  const list = getLocal(table);
+  const row = { id: uuid(), created_at: new Date().toISOString(), ...data };
+  list.unshift(row);
+  setLocal(table, list);
+  return row;
+}
+async function dbUpdate(table, id, updates) {
+  const list = getLocal(table);
+  const idx = list.findIndex(x => x.id === id);
+  if (idx < 0) return null;
+  list[idx] = { ...list[idx], ...updates };
+  setLocal(table, list);
+  return list[idx];
+}
+async function dbDelete(table, id) {
+  let list = getLocal(table);
+  list = list.filter(x => x.id !== id);
+  setLocal(table, list);
+}
 
-【TO DO 待办清单】
-1. 整理客户资料并分类
-2. 3天内完成首次跟进
-3. 输出合作方案`;
+// ============================================================
+// 媒体本地存储（Base64）
+// ============================================================
+async function uploadMedia(blob, type, ext) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const key = `${type}_${uuid()}.${ext}`;
+      localStorage.setItem('media_' + key, reader.result);
+      resolve(key);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+function getMediaUrl(filePath) {
+  return localStorage.getItem('media_' + filePath) || '';
+}
+async function deleteMediaFile(filePath) {
+  localStorage.removeItem('media_' + filePath);
+}
+async function fetchMediaBlob(filePath) {
+  const dataURL = getMediaUrl(filePath);
+  const res = await fetch(dataURL);
+  return await res.blob();
+}
+
+// ============================================================
+// 全局状态
+// ============================================================
+let currentTab = 'home';
+let currentExpo = null;
+let allExpos = [];
+
+// 媒体流状态
+let photoStream = null, photoFacing = 'environment';
+let audioRecorder = null, audioStream = null, audioChunks = [], audioState = 'idle', audioInterval = null, audioSeconds = 0;
+let videoRecorder = null, videoStream = null, videoChunks = [], videoState = 'idle', videoInterval = null, videoSeconds = 0, videoFacing = 'environment';
+let pendingPhotoBlob = null;
+
+// 语音识别
+let audioSpeechRec = null, audioTranscript = '', videoSpeechRec = null, videoTranscript = '';
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function createSpeechRec(onResult) {
+  if (!SpeechRecognition) return null;
+  const rec = new SpeechRecognition();
+  rec.continuous = true; rec.interimResults = true; rec.lang = 'zh-CN';
+  rec.onresult = e => {
+    let final = '', interim = '';
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    onResult(final, interim);
+  };
+  rec.onerror = () => {};
+  rec.onend = function() { if (this._keepAlive) try { this.start() } catch(e) {} };
+  return rec;
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+async function init() {
+  allExpos = await dbGetAll('expos');
+  if (allExpos.length > 0 && !currentExpo) currentExpo = allExpos[0];
+  initAudioWave();
+  renderHome();
+  updateHeaderExpo();
+}
+
+window.addEventListener('DOMContentLoaded', init);
+
+// ============================================================
+// 标签页切换
+// ============================================================
+function switchTab(tab) {
+  if (currentTab === tab) return;
+  if (currentTab === 'photo') stopPhotoStream();
+  if (currentTab === 'audio' && audioState !== 'idle') stopAudioRecording();
+  if (currentTab === 'video' && videoState !== 'idle') stopVideoRecording();
+  if (currentTab === 'video') stopVideoStream();
+
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  currentTab = tab;
+  const pageMap = { home: 'pageHome', photo: 'pagePhoto', audio: 'pageAudio', video: 'pageVideo', contact: 'pageContact' };
+  document.getElementById(pageMap[tab]).classList.add('active');
+
+  document.getElementById('homeFab').style.display = tab === 'home' ? 'flex' : 'none';
+  const headerLeft = document.getElementById('headerLeft');
+  headerLeft.style.visibility = 'hidden';
+
+  if (tab === 'home') {
+    document.getElementById('headerTitle').textContent = '展记';
+    document.getElementById('headerRight').style.visibility = 'hidden';
+    renderHome();
+  } else {
+    if (!currentExpo) { showToast('请先选择或创建一个展会'); switchTab('home'); return; }
+    document.getElementById('headerTitle').textContent = { photo: '拍照', audio: '录音', video: '录像', contact: '对话记录' }[tab];
+    updateHeaderExpo();
+    if (tab === 'photo') { startPhotoStream(); renderPhotoList(); }
+    if (tab === 'audio') renderAudioList();
+    if (tab === 'video') { startVideoStream(); renderVideoList(); }
+    if (tab === 'contact') renderContactList();
+  }
+  if (tab === 'contact') {
+    document.getElementById('homeFab').style.display = 'flex';
+    document.getElementById('homeFab').onclick = () => showNewContactModal();
+  } else {
+    document.getElementById('homeFab').onclick = () => showNewExpoModal();
   }
 }
 
-// ======================================
-// 导出 Word
-// ======================================
-async function exportWord(items, title) {
-  const allText = items.map(i => i.content).join('\n');
-  const summary = await aiSummary(allText);
-  const { Paragraph, TextRun, ImageRun, Document, Packer } = window.docx;
+// ============================================================
+// 头部 & 返回
+// ============================================================
+function updateHeaderExpo() {
+  const el = document.getElementById('headerExpoName');
+  el.textContent = currentExpo ? ('当前展会: ' + currentExpo.name) : '';
+}
+function goBack() {
+  document.getElementById('headerLeft').style.visibility = 'hidden';
+  document.getElementById('headerRight').style.visibility = 'hidden';
+  document.getElementById('pageDetail').classList.remove('active');
+  document.getElementById('pageHome').classList.add('active');
+  document.getElementById('headerTitle').textContent = '展记';
+  document.getElementById('homeFab').style.display = 'flex';
+  currentTab = 'home';
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === 'home'));
+}
 
-  const children = [
-    new Paragraph({ text: title, heading: "Heading1", alignment: "center" }),
-    new Paragraph({ text: "一、AI 智能趋势总结", heading: "Heading2" }),
-    new Paragraph(summary),
-    new Paragraph({ text: "二、展会详细记录（按时间）", heading: "Heading2" }),
-  ];
+// ============================================================
+// 提示框
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
 
-  [...items].reverse().forEach(r => {
-    children.push(new Paragraph({
-      text: new Date(r.time).toLocaleString(),
-      style: "ListBullet"
-    }));
-    children.push(new Paragraph(r.content));
-    if (r.photo) {
-      children.push(new Paragraph(new ImageRun({
-        data: r.photo.split(',')[1],
-        width: 4000000
-      })));
-    }
+// ============================================================
+// 模态框
+// ============================================================
+function showModal(title, html) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show') }
+
+// ============================================================
+// 搜索
+// ============================================================
+function filterExpos() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  document.getElementById('searchClear').style.display = q ? 'block' : 'none';
+  const cards = document.querySelectorAll('.expo-card');
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  document.querySelectorAll('.expo-card').forEach(card => card.style.display = '');
+}
+
+// ============================================================
+// 首页 & 展会列表（仅保留列表）
+// ============================================================
+async function renderHome() {
+  allExpos = await dbGetAll('expos');
+  const c = document.getElementById('expoListContainer');
+  if (allExpos.length === 0) {
+    c.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 7h8M8 11h5"/></svg><h3>还没有展会记录</h3><p>点击右下角 + 按钮创建你的第一个展会</p></div>';
+    return;
+  }
+
+  let html = '<div class="section-header"><h2>展会列表</h2></div>';
+  const photos = await dbGetAll('photos'), audios = await dbGetAll('audios'), videos = await dbGetAll('videos'), contacts = await dbGetAll('contacts');
+  const count = (arr, eid) => arr.filter(r => r.expo_id === eid).length;
+
+  for (const ex of allExpos) {
+    const sel = currentExpo && currentExpo.id === ex.id;
+    const pc = count(photos, ex.id), ac = count(audios, ex.id), vc = count(videos, ex.id), cc = count(contacts, ex.id);
+    html += '<div class="expo-card" onclick="selectExpo(\'' + ex.id + '\')">' +
+      (sel ? '<div class="selected-indicator">当前</div>' : '') +
+      '<div class="expo-card-name">' + esc(ex.name) + '</div>' +
+      '<div class="expo-card-info"><span>' + (ex.date || '') + '</span>' + (ex.location ? '<span>·</span><span>' + esc(ex.location) + '</span>' : '') + '</div>' +
+      '<div class="expo-card-stats">' +
+        '<span class="stat-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>' + pc + '</span>' +
+        '<span class="stat-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>' + ac + '</span>' +
+        '<span class="stat-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>' + vc + '</span>' +
+        '<span class="stat-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + cc + '</span>' +
+      '</div></div>';
+  }
+  c.innerHTML = html;
+}
+
+function selectExpo(id) {
+  currentExpo = allExpos.find(e => e.id === id) || null;
+  updateHeaderExpo();
+  // 切换展会后，刷新所有媒体页面
+  if(currentTab === 'photo') renderPhotoList();
+  if(currentTab === 'audio') renderAudioList();
+  if(currentTab === 'video') renderVideoList();
+  if(currentTab === 'contact') renderContactList();
+  showExpoDetail(id);
+}
+
+// ============================================================
+// 导出选择弹窗
+// ============================================================
+function showExportModal(expoId) {
+  showModal('选择导出类型',
+    '<button class="form-btn" style="margin-bottom:12px" onclick="exportDailyReport(\''+ expoId +'\')">📝 观展日报</button>'+
+    '<button class="form-btn" onclick="exportSummaryReport(\''+ expoId +'\')">📊 展会总结报告</button>'
+  );
+}
+
+// ============================================================
+// 展会详情
+// ============================================================
+async function showExpoDetail(id) {
+  const ex = allExpos.find(e => e.id === id); if (!ex) return;
+  currentTab = 'detail';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('pageDetail').classList.add('active');
+  document.getElementById('headerTitle').textContent = ex.name;
+  document.getElementById('headerExpoName').textContent = (ex.date || '') + (ex.location ? ' · ' + ex.location : '');
+  document.getElementById('headerLeft').style.visibility = 'visible';
+  document.getElementById('homeFab').style.display = 'none';
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+
+  const photos = await dbGetByExpo('photos', id);
+  const audios = await dbGetByExpo('audios', id);
+  const videos = await dbGetByExpo('videos', id);
+  const contacts = await dbGetByExpo('contacts', id);
+
+  let html = '';
+  html += '<div class="detail-section">' +
+    '<button class="export-btn" onclick="showExportModal(\'' + id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出Word报告</button>' +
+    '<div style="display:flex;gap:8px;margin-top:8px">' +
+      '<button class="form-btn" style="flex:1;font-size:13px;padding:10px" onclick="showEditExpoModal(\'' + id + '\')">编辑展会</button>' +
+      '<button class="form-btn danger" style="flex:1;font-size:13px;padding:10px" onclick="deleteExpo(\'' + id + '\')">删除展会</button>' +
+    '</div></div>';
+
+  if (ex.description) html += '<div class="detail-section"><div class="contact-notes">' + esc(ex.description) + '</div></div>';
+
+  // 照片
+  html += '<div class="detail-section"><div class="detail-section-title">照片 (' + photos.length + ')</div>';
+  if (photos.length > 0) {
+    html += '<div class="detail-grid">';
+    photos.forEach(p => {
+      const url = getMediaUrl(p.file_path);
+      const imp = p.important;
+      html += '<div class="detail-grid-item' + (imp ? ' photo-important' : '') + '" onclick="viewMedia(\'image\',\'' + p.id + '\')">' +
+        '<img src="' + url + '">' +
+        '<button class="photo-star' + (imp ? ' important' : '') + '" onclick="event.stopPropagation();togglePhotoStarDetail(\'' + p.id + '\',\'' + id + '\')"><svg viewBox="0 0 24 24" fill="' + (imp ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>' +
+      '</div>';
+    });
+    html += '</div>';
+  } else html += '<div style="color:var(--text3);font-size:13px;padding:8px 0">暂无照片</div>';
+  html += '</div>';
+
+  // 录音
+  html += '<div class="detail-section"><div class="detail-section-title">录音 (' + audios.length + ')</div>';
+  audios.forEach(a => {
+    const hasT = a.transcript?.trim();
+    html += '<div class="record-item" onclick="playAudio(\'' + a.id + '\')">' +
+      '<div class="record-item-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg></div>' +
+      '<div class="record-item-info"><div class="record-item-title">录音 ' + fmtDuration(a.duration || 0) + (hasT ? '<span class="transcript-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>已转写</span>' : '') + '</div><div class="record-item-meta">' + fmtDate(a.created_at) + '</div>' + (hasT ? '<div class="record-item-transcript">' + esc(a.transcript) + '</div>' : '') + '</div>' +
+    '</div>';
+  });
+  if (audios.length === 0) html += '<div style="color:var(--text3);font-size:13px;padding:8px 0">暂无录音</div>';
+  html += '</div>';
+
+  // 录像
+  html += '<div class="detail-section"><div class="detail-section-title">录像 (' + videos.length + ')</div>';
+  if (videos.length > 0) {
+    html += '<div class="detail-grid">';
+    videos.forEach(v => {
+      const url = getMediaUrl(v.file_path);
+      html += '<div class="detail-grid-item" onclick="viewMedia(\'video\',\'' + v.id + '\')">' +
+        '<video src="' + url + '" muted></video>' +
+        '<div class="play-badge"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>';
+    });
+    html += '</div>';
+  } else html += '<div style="color:var(--text3);font-size:13px;padding:8px 0">暂无录像</div>';
+  html += '</div>';
+
+  // 联系人
+  html += '<div class="detail-section"><div class="detail-section-title">对话记录 (' + contacts.length + ')</div>';
+  contacts.forEach(ct => { html += renderContactCard(ct); });
+  if (contacts.length === 0) html += '<div style="color:var(--text3);font-size:13px;padding:8px 0">暂无对话记录</div>';
+  html += '</div>';
+
+  document.getElementById('detailContent').innerHTML = html;
+}
+
+// ============================================================
+// 展会增删改
+// ============================================================
+function showNewExpoModal() {
+  showModal('新建展会',
+    '<div class="form-group"><label class="form-label">展会名称 *</label><input class="form-input" id="expoName" placeholder="如：2026 CES"></div>' +
+    '<div class="form-group"><label class="form-label">日期</label><input class="form-input" id="expoDate" type="date"></div>' +
+    '<div class="form-group"><label class="form-label">地点</label><input class="form-input" id="expoLocation" placeholder="展馆地址"></div>' +
+    '<div class="form-group"><label class="form-label">描述</label><textarea class="form-input" id="expoDesc" placeholder="备注"></textarea></div>' +
+    '<button class="form-btn" onclick="saveNewExpo()">创建</button>'
+  );
+}
+async function saveNewExpo() {
+  const name = document.getElementById('expoName').value.trim();
+  if (!name) { showToast('请输入名称'); return; }
+  const row = await dbInsert('expos', {
+    name, date: document.getElementById('expoDate').value,
+    location: document.getElementById('expoLocation').value.trim(),
+    description: document.getElementById('expoDesc').value.trim()
+  });
+  currentExpo = row; closeModal(); showToast('创建成功');
+  updateHeaderExpo(); renderHome();
+}
+function showEditExpoModal(id) {
+  const ex = allExpos.find(e => e.id === id);
+  showModal('编辑展会',
+    '<div class="form-group"><input class="form-input" id="editExpoName" value="' + esc(ex.name) + '"></div>' +
+    '<div class="form-group"><input class="form-input" id="editExpoDate" type="date" value="' + (ex.date || '') + '"></div>' +
+    '<div class="form-group"><input class="form-input" id="editExpoLocation" value="' + esc(ex.location || '') + '"></div>' +
+    '<div class="form-group"><textarea class="form-input" id="editExpoDesc">' + esc(ex.description || '') + '</textarea></div>' +
+    '<button class="form-btn" onclick="saveEditExpo(\'' + id + '\')">保存</button>'
+  );
+}
+async function saveEditExpo(id) {
+  await dbUpdate('expos', id, {
+    name: document.getElementById('editExpoName').value.trim(),
+    date: document.getElementById('editExpoDate').value,
+    location: document.getElementById('editExpoLocation').value.trim(),
+    description: document.getElementById('editExpoDesc').value.trim()
+  });
+  closeModal(); showToast('保存成功');
+  allExpos = await dbGetAll('expos');
+  currentExpo = allExpos.find(e => e.id === id);
+  showExpoDetail(id);
+}
+async function deleteExpo(id) {
+  if (!confirm('确定删除该展会及所有数据？')) return;
+  const tables = ['photos','audios','videos','contacts'];
+  for (const t of tables) {
+    const items = await dbGetByExpo(t, id);
+    for (const it of items) { await deleteMediaFile(it.file_path); await dbDelete(t, it.id); }
+  }
+  await dbDelete('expos', id);
+  currentExpo = null; showToast('已删除'); goBack(); renderHome();
+}
+
+// ============================================================
+// 拍照（仅显示当前展会）
+// ============================================================
+async function startPhotoStream() {
+  try {
+    if (photoStream) stopPhotoStream();
+    photoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: photoFacing }, audio: false });
+    document.getElementById('photoPreview').srcObject = photoStream;
+  } catch(e) { showToast('无法打开相机'); }
+}
+function stopPhotoStream() {
+  if (photoStream) photoStream.getTracks().forEach(t => t.stop());
+  photoStream = null; document.getElementById('photoPreview').srcObject = null;
+}
+function switchPhotoCamera() {
+  photoFacing = photoFacing === 'environment' ? 'user' : 'environment';
+  startPhotoStream();
+}
+function takePhoto() {
+  const video = document.getElementById('photoPreview');
+  const canvas = document.getElementById('photoCanvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  canvas.toBlob(b => {
+    pendingPhotoBlob = b;
+    document.getElementById('previewImage').src = URL.createObjectURL(b);
+    document.getElementById('previewOverlay').classList.add('show');
+  },'image/jpeg',0.92);
+}
+function cancelPreview() {
+  pendingPhotoBlob = null;
+  document.getElementById('previewOverlay').classList.remove('show');
+}
+async function confirmPhoto() {
+  if (!pendingPhotoBlob || !currentExpo) return;
+  const path = await uploadMedia(pendingPhotoBlob,'photo','jpg');
+  await dbInsert('photos', { expo_id: currentExpo.id, file_path: path, important: false });
+  pendingPhotoBlob = null;
+  document.getElementById('previewOverlay').classList.remove('show');
+  showToast('已保存'); renderPhotoList();
+}
+async function renderPhotoList() {
+  if (!currentExpo) return;
+  const list = await dbGetByExpo('photos', currentExpo.id);
+  const c = document.getElementById('photoList');
+  if (list.length === 0) { c.innerHTML = '<div style="text-align:center;color:var(--text3);padding:16px">暂无照片</div>'; return; }
+  let html = '<div style="margin-top:8px;font-size:13px;color:var(--text2)">已拍摄 ' + list.length + ' 张 · 点击⭐标记重点</div>';
+  list.forEach(p => {
+    const url = getMediaUrl(p.file_path);
+    const imp = p.important;
+    html += '<div class="record-item' + (imp ? ' photo-important' : '') + '">' +
+      '<div class="record-item-thumb"><img src="' + url + '">' +
+      '<button class="photo-star' + (imp ? ' important' : '') + '" onclick="event.stopPropagation();togglePhotoStar(\'' + p.id + '\')"><svg viewBox="0 0 24 24" fill="' + (imp ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></div>' +
+      '<div class="record-item-info"><div class="record-item-title">照片' + (imp ? ' ⭐' : '') + '</div><div class="record-item-meta">' + fmtDate(p.created_at) + '</div></div>' +
+      '<button class="record-item-del" onclick="event.stopPropagation();deleteRecord(\'photos\',\'' + p.id + '\',\'photo\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
+    '</div>';
+  });
+  c.innerHTML = html;
+}
+
+// ============================================================
+// 录音（仅显示当前展会）
+// ============================================================
+function initAudioWave() {
+  const w = document.getElementById('audioWave');
+  for (let i=0;i<30;i++) w.innerHTML += '<div class="audio-wave-bar" style="animation-delay:'+(Math.random()*.8+.2).toFixed(2)+'s"></div>';
+}
+async function toggleAudio() { audioState === 'idle' ? startAudioRecording() : stopAudioRecording(); }
+async function startAudioRecording() {
+  audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioRecorder = new MediaRecorder(audioStream); audioChunks = []; audioTranscript = '';
+  document.getElementById('audioTranscript').textContent = ''; document.getElementById('audioTranscript').classList.remove('idle');
+  audioRecorder.ondataavailable = e => e.data.size && audioChunks.push(e.data);
+  audioRecorder.onstop = async () => {
+    const blob = new Blob(audioChunks,{type:'audio/webm'});
+    const path = await uploadMedia(blob,'audio','webm');
+    await dbInsert('audios', { expo_id:currentExpo.id, file_path:path, duration:audioSeconds, transcript:audioTranscript });
+    showToast('录音已保存'); renderAudioList();
+    audioStream.getTracks().forEach(t=>t.stop());
+  };
+  audioRecorder.start(1000);
+  audioSpeechRec = createSpeechRec((f,i)=>{ audioTranscript=f; document.getElementById('audioTranscript').textContent=f+i; });
+  if(audioSpeechRec){ audioSpeechRec._keepAlive=1; audioSpeechRec.start(); }
+  audioState='recording'; audioSeconds=0;
+  document.getElementById('audioRecBtn').classList.add('recording');
+  document.getElementById('audioPauseBtn').style.display='flex';
+  document.getElementById('audioWave').classList.add('active');
+  document.getElementById('audioStatus').textContent='录音中...';
+  audioInterval=setInterval(()=>{ audioSeconds++; document.getElementById('audioTimer').textContent=fmtDuration(audioSeconds); },1000);
+}
+function pauseAudio() {
+  if(audioState==='recording'){ audioRecorder.pause(); audioState='paused'; clearInterval(audioInterval);
+    document.getElementById('audioStatus').textContent='已暂停'; document.getElementById('audioWave').classList.remove('active');
+    document.getElementById('audioPauseBtn').innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+  }else{ audioRecorder.resume(); audioState='recording';
+    document.getElementById('audioStatus').textContent='录音中...'; document.getElementById('audioWave').classList.add('active');
+    document.getElementById('audioPauseBtn').innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
+    audioInterval=setInterval(()=>{ audioSeconds++; document.getElementById('audioTimer').textContent=fmtDuration(audioSeconds); },1000);
+  }
+}
+function stopAudioRecording() {
+  if(audioRecorder && audioRecorder.state!=='inactive') audioRecorder.stop();
+  if(audioSpeechRec){ audioSpeechRec._keepAlive=0; audioSpeechRec.stop(); }
+  clearInterval(audioInterval); audioState='idle';
+  document.getElementById('audioTimer').textContent='00:00'; document.getElementById('audioStatus').textContent='点击开始录音';
+  document.getElementById('audioRecBtn').classList.remove('recording'); document.getElementById('audioPauseBtn').style.display='none';
+  document.getElementById('audioWave').classList.remove('active'); document.getElementById('audioTranscript').classList.add('idle');
+}
+async function renderAudioList() {
+  if(!currentExpo)return;
+  const list=await dbGetByExpo('audios',currentExpo.id);
+  const c=document.getElementById('audioList');
+  if(list.length===0){ c.innerHTML='<div style="text-align:center;color:var(--text3);padding:16px">暂无录音</div>'; return; }
+  let html='<div style="margin-top:16px;font-size:13px;color:var(--text2)">录音列表 '+list.length+'</div>';
+  list.forEach(a=>{
+    const hasT=a.transcript?.trim();
+    html+='<div class="record-item" onclick="playAudio(\''+a.id+'\')">' +
+      '<div class="record-item-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>' +
+      '<div class="record-item-info"><div class="record-item-title">录音 '+fmtDuration(a.duration||0)+(hasT?'<span class="transcript-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>已转写</span>':'')+'</div><div class="record-item-meta">'+fmtDate(a.created_at)+'</div>'+(hasT?'<div class="record-item-transcript">'+esc(a.transcript)+'</div>':'')+'</div>' +
+      '<button class="edit-transcript-btn" onclick="event.stopPropagation();editTranscript(\'audios\',\''+a.id+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>' +
+      '<button class="record-item-del" onclick="event.stopPropagation();deleteRecord(\'audios\',\''+a.id+'\',\'audio\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
+    '</div>';
+  });
+  c.innerHTML=html;
+}
+async function playAudio(id){
+  const a=(await dbGetByExpo('audios',currentExpo.id)).find(x=>x.id===id);
+  const aud=document.getElementById('mediaViewAudio');
+  aud.src=getMediaUrl(a.file_path); aud.style.display='block'; aud.play();
+  document.getElementById('mediaViewImg').style.display='none'; document.getElementById('mediaViewVideo').style.display='none';
+  document.getElementById('mediaViewOverlay').classList.add('show');
+}
+
+// ============================================================
+// 录像（仅显示当前展会）
+// ============================================================
+async function startVideoStream(){
+  videoStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:videoFacing},audio:true});
+  document.getElementById('videoPreview').srcObject=videoStream;
+}
+function stopVideoStream(){ if(videoStream)videoStream.getTracks().forEach(t=>t.stop()); videoStream=null; }
+function switchVideoCamera(){ videoFacing=videoFacing==='environment'?'user':'environment'; startVideoStream(); }
+function toggleVideo(){ videoState==='idle'?startVideoRecording():stopVideoRecording(); }
+function startVideoRecording(){
+  videoRecorder=new MediaRecorder(videoStream,{mimeType:'video/webm;codecs=vp8,opus'}); videoChunks=[]; videoTranscript='';
+  document.getElementById('videoTranscript').classList.remove('idle');
+  videoRecorder.ondataavailable=e=>e.data.size&&videoChunks.push(e.data);
+  videoRecorder.onstop=async()=>{
+    const blob=new Blob(videoChunks,{type:videoRecorder.mimeType});
+    const path=await uploadMedia(blob,'video','webm');
+    await dbInsert('videos',{expo_id:currentExpo.id,file_path:path,duration:videoSeconds,transcript:videoTranscript});
+    showToast('录像已保存'); renderVideoList();
+  };
+  videoRecorder.start(1000);
+  videoSpeechRec=createSpeechRec((f,i)=>{videoTranscript=f;document.getElementById('videoTranscript').textContent=f+i;});
+  if(videoSpeechRec){videoSpeechRec._keepAlive=1;videoSpeechRec.start();}
+  videoState='recording';videoSeconds=0;
+  document.getElementById('videoRecBtn').classList.add('recording');
+  document.getElementById('videoTimerDisplay').style.opacity='1';
+  videoInterval=setInterval(()=>{videoSeconds++;document.getElementById('videoTimerDisplay').textContent=fmtDuration(videoSeconds);},1000);
+}
+function stopVideoRecording(){
+  if(videoRecorder&&videoRecorder.state!=='inactive')videoRecorder.stop();
+  if(videoSpeechRec){videoSpeechRec._keepAlive=0;videoSpeechRec.stop();}
+  clearInterval(videoInterval);videoState='idle';
+  document.getElementById('videoRecBtn').classList.remove('recording');
+  document.getElementById('videoTimerDisplay').style.opacity='0';
+  document.getElementById('videoTranscript').classList.add('idle');
+}
+async function renderVideoList(){
+  if(!currentExpo)return;
+  const list=await dbGetByExpo('videos',currentExpo.id);
+  const c=document.getElementById('videoList');
+  if(list.length===0){c.innerHTML='<div style="text-align:center;color:var(--text3);padding:16px">暂无录像</div>';return;}
+  let html='<div style="margin-top:8px;font-size:13px;color:var(--text2)">录像列表 '+list.length+'</div>';
+  list.forEach(v=>{
+    const hasT=v.transcript?.trim();
+    html+='<div class="record-item" onclick="playVideo(\''+v.id+'\')">' +
+      '<div class="record-item-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>' +
+      '<div class="record-item-info"><div class="record-item-title">录像 '+fmtDuration(v.duration||0)+(hasT?'<span class="transcript-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>已转写</span>':'')+'</div><div class="record-item-meta">'+fmtDate(v.created_at)+'</div>'+(hasT?'<div class="record-item-transcript">'+esc(v.transcript)+'</div>':'')+'</div>' +
+      '<button class="edit-transcript-btn" onclick="event.stopPropagation();editTranscript(\'videos\',\''+v.id+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>' +
+      '<button class="record-item-del" onclick="event.stopPropagation();deleteRecord(\'videos\',\''+v.id+'\',\'video\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
+    '</div>';
+  });
+  c.innerHTML=html;
+}
+async function playVideo(id){
+  const v=(await dbGetByExpo('videos',currentExpo.id)).find(x=>x.id===id);
+  const vid=document.getElementById('mediaViewVideo');
+  vid.src=getMediaUrl(v.file_path); vid.style.display='block'; vid.play();
+  document.getElementById('mediaViewImg').style.display='none'; document.getElementById('mediaViewAudio').style.display='none';
+  document.getElementById('mediaViewOverlay').classList.add('show');
+}
+
+// ============================================================
+// 对话记录（仅显示当前展会）
+// ============================================================
+function showNewContactModal(){
+  showModal('新增对话记录',
+    '<div class="form-group"><input class="form-input" id="contactName" placeholder="姓名"></div>' +
+    '<div class="form-group"><input class="form-input" id="contactCompany" placeholder="公司"></div>' +
+    '<div class="form-group"><input class="form-input" id="contactPosition" placeholder="职位"></div>' +
+    '<div class="form-group"><input class="form-input" id="contactPhone" placeholder="电话/微信"></div>' +
+    '<div class="form-group"><textarea class="form-input" id="contactNotes" rows="4" placeholder="交流要点"></textarea></div>' +
+    '<button class="form-btn" onclick="saveNewContact()">保存</button>'
+  );
+}
+async function saveNewContact(){
+  const name=document.getElementById('contactName').value.trim();
+  if(!name){showToast('请输入姓名');return;}
+  await dbInsert('contacts',{
+    expo_id:currentExpo.id,name,
+    company:document.getElementById('contactCompany').value.trim(),
+    position:document.getElementById('contactPosition').value.trim(),
+    phone:document.getElementById('contactPhone').value.trim(),
+    notes:document.getElementById('contactNotes').value.trim()
+  });
+  closeModal();showToast('保存成功');renderContactList();
+}
+async function renderContactList(){
+  if(!currentExpo)return;
+  const list=await dbGetByExpo('contacts',currentExpo.id);
+  const c=document.getElementById('contactListContainer');
+  if(list.length===0){c.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><h3>暂无对话</h3><p>点击+记录交流</p></div>';return;}
+  let html='<div class="section-header"><h2>对话记录</h2><span style="font-size:13px;color:var(--text3)">'+list.length+'条</span></div>';
+  list.forEach(ct=>{html+=renderContactCard(ct);});
+  c.innerHTML=html;
+}
+function renderContactCard(c){
+  const i=c.name.charAt(0);
+  return '<div class="contact-card">' +
+    '<div class="contact-card-header"><div class="contact-avatar">'+i+'</div><div><div class="contact-name">'+esc(c.name)+'</div><div class="contact-company">'+esc(c.company||'')+(c.position?' · '+esc(c.position):'')+'</div></div></div>' +
+    (c.phone?'<div class="contact-details"><div class="contact-detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg><span>'+esc(c.phone)+'</span></div></div>':'') +
+    (c.notes?'<div class="contact-notes">'+esc(c.notes).replace(/\n/g,'<br>')+'</div>':'') +
+    '<div class="contact-card-actions"><button style="background:var(--bg);color:var(--danger)" onclick="deleteRecord(\'contacts\',\''+c.id+'\',\'contact\')">删除</button></div>' +
+  '</div>';
+}
+
+// ============================================================
+// 通用删除 & 收藏 & 编辑转写
+// ============================================================
+async function deleteRecord(table,id,type){
+  if(!confirm('确定删除？'))return;
+  const item=(await dbGetAll(table)).find(x=>x.id===id);
+  if(item?.file_path)await deleteMediaFile(item.file_path);
+  await dbDelete(table,id);showToast('已删除');
+  if(type==='photo')renderPhotoList();else if(type==='audio')renderAudioList();else if(type==='video')renderVideoList();else renderContactList();
+}
+async function togglePhotoStar(id){
+  const p=(await dbGetByExpo('photos',currentExpo.id)).find(x=>x.id===id);
+  await dbUpdate('photos',id,{important:!p.important}); renderPhotoList();
+}
+async function togglePhotoStarDetail(pid,eid){
+  const p=(await dbGetByExpo('photos',eid)).find(x=>x.id===pid);
+  await dbUpdate('photos',pid,{important:!p.important}); showExpoDetail(eid);
+}
+async function editTranscript(table,id){
+  const item=(await dbGetAll(table)).find(x=>x.id===id);
+  showModal('编辑转写','<div class="form-group"><textarea class="form-input" id="editTranscriptText" rows="8">'+esc(item.transcript||'')+'</textarea></div><button class="form-btn" onclick="saveTranscript(\''+table+'\',\''+id+'\')">保存</button>');
+}
+async function saveTranscript(table,id){
+  await dbUpdate(table,id,{transcript:document.getElementById('editTranscriptText').value});
+  closeModal();showToast('已更新'); table==='audios'?renderAudioList():renderVideoList();
+}
+
+// ============================================================
+// 媒体预览 & 导出
+// ============================================================
+async function viewMedia(type,id){
+  const o=document.getElementById('mediaViewOverlay');
+  document.getElementById('mediaViewImg').style.display='none'; document.getElementById('mediaViewVideo').style.display='none'; document.getElementById('mediaViewAudio').style.display='none';
+  if(type==='image'){const p=(await dbGetAll('photos')).find(x=>x.id===id);const i=document.getElementById('mediaViewImg');i.src=getMediaUrl(p.file_path);i.style.display='block';}
+  o.classList.add('show');
+}
+function closeMediaView(){
+  const o=document.getElementById('mediaViewOverlay');o.classList.remove('show');
+  document.getElementById('mediaViewVideo').pause(); document.getElementById('mediaViewAudio').pause();
+}
+function showExportProgress(m){let e=document.createElement('div');e.id='exportProgress';e.className='export-progress';e.innerHTML='<div class="export-progress-spinner"></div><div class="export-progress-text">'+m+'</div>';document.body.appendChild(e);}
+function hideExportProgress(){const e=document.getElementById('exportProgress');if(e)e.remove();}
+function blobToArrayBuffer(b){return new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsArrayBuffer(b);});}
+const STOP_WORDS=new Set('的了是在我有和就不人都一个上也这到说要会可以你那我们他她它为对从而与被让给把比更很已所又或者之其如果因为但是然而虽然如何什么怎么哪里什么时候为什么可能应该需要能够这个那个这些那些自己他们我们你们大家没有不是已经正在可以还是以及关于通过进行表示'.split(''));
+function extractKeywords(t){const s=t.join(' ').replace(/[，。！？、；：""''（）\s\n]/g,' ').split(/\s+/).filter(w=>w.length>=2&&w.length<=8&&!STOP_WORDS.has(w));const f={};s.forEach(w=>f[w]=(f[w]||0)+1);return Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,15);}
+
+// ============================================================
+// 导出：观展日报（时间线流水）
+// ============================================================
+async function exportDailyReport(id) {
+  const ex = allExpos.find(e => e.id === id);
+  if (!ex) return;
+  showExportProgress('正在生成观展日报...');
+
+  const photos = await dbGetByExpo('photos', id);
+  const audios = await dbGetByExpo('audios', id);
+  const videos = await dbGetByExpo('videos', id);
+  const contacts = await dbGetByExpo('contacts', id);
+
+  const timeline = [];
+  photos.forEach(p => timeline.push({ type: 'photo', data: p, time: new Date(p.created_at).getTime() }));
+  audios.forEach(a => timeline.push({ type: 'audio', data: a, time: new Date(a.created_at).getTime() }));
+  videos.forEach(v => timeline.push({ type: 'video', data: v, time: new Date(v.created_at).getTime() }));
+  contacts.forEach(c => timeline.push({ type: 'contact', data: c, time: new Date(c.created_at).getTime() }));
+  timeline.sort((a, b) => a.time - b.time);
+
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun } = docx;
+
+  const doc = new Document({
+    sections: [{
+      children: [
+        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "观展日报", size: 44, bold: true })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: ex.name, size: 28 })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: new Date().toLocaleDateString(), size: 24 })] }),
+        new Paragraph({ text: "" }),
+      ]
+    }]
   });
 
-  const doc = new Document({ sections: [{ properties: {}, children }] });
-  Packer.toBlob(doc).then(blob => saveAs(blob, `${title}.docx`));
+  for (const item of timeline) {
+    if (item.type === 'photo') {
+      const blob = await fetchMediaBlob(item.data.file_path);
+      const buf = await blobToArrayBuffer(blob);
+      doc.addSection({ children: [new Paragraph({ children: [new ImageRun({ data: buf, width: 300 })] })] });
+    }
+    if (item.type === 'audio') {
+      const t = item.data.transcript || '无转写';
+      doc.addSection({ children: [new Paragraph(`【录音】${fmtDate(item.data.created_at)}`)] });
+      doc.addSection({ children: [new Paragraph(t)] });
+    }
+    if (item.type === 'video') {
+      const t = item.data.transcript || '无转写';
+      doc.addSection({ children: [new Paragraph(`【录像】${fmtDate(item.data.created_at)}`)] });
+      doc.addSection({ children: [new Paragraph(t)] });
+    }
+    if (item.type === 'contact') {
+      const c = item.data;
+      doc.addSection({ children: [new Paragraph(`【交流】${c.name} | ${c.company || ''} | ${c.phone || ''}`)] });
+      doc.addSection({ children: [new Paragraph(c.notes || '无记录')] });
+    }
+  }
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `观展日报_${ex.name}.docx`);
+  hideExportProgress();
+  showToast('观展日报导出成功');
+  closeModal();
 }
 
-async function exportDaily() {
-  const today = new Date().toISOString().split('T')[0];
-  const todayItems = records.filter(r => r.time.startsWith(today));
-  await exportWord(todayItems, `展会日报 ${today}`);
+// ============================================================
+// 导出：展会总结报告（结构化正式版）
+// ============================================================
+async function exportSummaryReport(id) {
+  const ex = allExpos.find(e => e.id === id);
+  if (!ex) return;
+  showExportProgress('正在生成展会总结报告...');
+
+  const photos = await dbGetByExpo('photos', id);
+  const audios = await dbGetByExpo('audios', id);
+  const videos = await dbGetByExpo('videos', id);
+  const contacts = await dbGetByExpo('contacts', id);
+  const importantPhotos = photos.filter(x => x.important);
+
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun } = docx;
+
+  const doc = new Document({
+    sections: [{
+      children: [
+        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "展会总结报告", size: 48, bold: true })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: ex.name, size: 32 })] }),
+        new Paragraph({ text: "" }),
+        new Paragraph({ children: [new TextRun({ text: "展会基本信息", size: 32, bold: true })] }),
+        new Paragraph(`展会名称：${ex.name}`),
+        new Paragraph(`展会时间：${ex.date || '未填写'}`),
+        new Paragraph(`展会地点：${ex.location || '未填写'}`),
+        new Paragraph(`展会描述：${ex.description || '无'}`),
+        new Paragraph({ text: "" }),
+      ]
+    }]
+  });
+
+  // 重点照片
+  doc.addSection({ children: [new Paragraph({ children: [new TextRun({ text: "重点照片", size: 32, bold: true })] })] });
+  for (const p of importantPhotos.slice(0, 10)) {
+    const blob = await fetchMediaBlob(p.file_path);
+    const buf = await blobToArrayBuffer(blob);
+    doc.addSection({ children: [new Paragraph({ children: [new ImageRun({ data: buf, width: 250 })] })] });
+  }
+
+  // 交流记录
+  doc.addSection({ children: [new Paragraph({ text: "" }), new Paragraph({ children: [new TextRun({ text: "交流记录", size: 32, bold: true })] })] });
+  contacts.forEach(c => {
+    doc.addSection({ children: [new Paragraph(`● ${c.name} - ${c.company || ''}（${c.phone || ''}）`)] });
+    doc.addSection({ children: [new Paragraph(c.notes || '无')] });
+  });
+
+  // 音视频转写
+  doc.addSection({ children: [new Paragraph({ text: "" }), new Paragraph({ children: [new TextRun({ text: "音视频记录", size: 32, bold: true })] })] });
+  audios.forEach(a => a.transcript && doc.addSection({ children: [new Paragraph(`● 录音：${a.transcript}`)] }));
+  videos.forEach(v => v.transcript && doc.addSection({ children: [new Paragraph(`● 录像：${v.transcript}`)] }));
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `展会总结报告_${ex.name}.docx`);
+  hideExportProgress();
+  showToast('总结报告导出成功');
+  closeModal();
 }
 
-async function exportFull() {
-  await exportWord(records, "展会总报告");
+// ============================================================
+// 工具函数
+// ============================================================
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function fmtDuration(s){const m=Math.floor(s/60).toString().padStart(2,'0');const s2=(s%60).toString().padStart(2,'0');return m+':'+s2;}
+function fmtDate(t){return new Date(t).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
+async function renderDashboard(){
+  const p=(await dbGetAll('photos')).length,a=(await dbGetAll('audios')).length,v=(await dbGetAll('videos')).length,c=(await dbGetAll('contacts')).length;
+  return `<div class="dash-stats"><div class="dash-stat"><div class="dash-stat-num">${allExpos.length}</div><div class="dash-stat-label">展会</div></div><div class="dash-stat"><div class="dash-stat-num">${c}</div><div class="dash-stat-label">对话</div></div><div class="dash-stat"><div class="dash-stat-num">${p}</div><div class="dash-stat-label">照片</div></div><div class="dash-stat"><div class="dash-stat-num">${a+v}</div><div class="dash-stat-label">音视频</div></div></div>`;
 }
-
-// 初始化
-renderHistory();
+function renderQuickActions(){
+  if(!currentExpo)return'';return'<div class="quick-actions"><button class="quick-action qa-photo" onclick="switchTab(\'photo\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>拍照</button><button class="quick-action qa-audio" onclick="switchTab(\'audio\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>录音</button><button class="quick-action qa-video" onclick="switchTab(\'video\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>录像</button><button class="quick-action qa-contact" onclick="switchTab(\'contact\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>对话</button></div>';
+}
 </script>
-
-<!-- PWA 安装支持 -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./index.html');
-}
-</script>
-<meta name="theme-color" content="#3B82F6">
-<link rel="manifest" href="data:application/json,{
-  'name':'展会智能记录助手',
-  'short_name':'展会记录',
-  'start_url':'/',
-  'display':'standalone',
-  'background_color':'#ffffff',
-  'theme_color':'#3B82F6',
-  'icons':[{'src':'https://picsum.photos/192','sizes':'192x192','type':'image/png'}]
-}">
 </body>
 </html>
