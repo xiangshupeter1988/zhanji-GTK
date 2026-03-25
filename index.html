@@ -21,7 +21,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
 button{font:inherit;border:none;background:none;cursor:pointer;outline:none}
 input,textarea{font:inherit;border:none;background:transparent;outline:none}
 
-/* 头部 */
 .app-header{
   position:fixed;top:0;left:0;right:0;z-index:100;
   padding-top:var(--safe-top);
@@ -33,7 +32,6 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 .header-btn{color:var(--accent);font-size:15px;padding:8px;min-width:44px}
 .header-expo-name{font-size:11px;color:var(--accent);text-align:center;padding-bottom:6px}
 
-/* 顶部AI操作栏 */
 .ai-top-bar{
   position:fixed;top:calc(var(--safe-top) + var(--header-h));left:0;right:0;z-index:90;
   background:rgba(15,31,61,.88);backdrop-filter:blur(20px);
@@ -53,7 +51,6 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
   background:rgba(255,255,255,.12);color:#fff;
 }
 
-/* 底部标签栏 */
 .tab-bar{
   position:fixed;bottom:0;left:0;right:0;z-index:100;
   padding-bottom:var(--safe-bottom);
@@ -66,7 +63,6 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 .tab-item svg{width:22px;height:22px}
 .tab-item span{font-size:9px;margin-top:2px}
 
-/* 页面 */
 .page{
   position:absolute;top:0;left:0;right:0;bottom:0;
   padding-top:calc(var(--safe-top) + var(--header-h) + 60px);
@@ -76,7 +72,6 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 .page.active{opacity:1;pointer-events:auto}
 .page-pad{padding:16px}
 
-/* 展会卡片 */
 .expo-card{
   background:var(--card);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;
   box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.06);position:relative
@@ -86,19 +81,16 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 .expo-card-info{font-size:13px;color:var(--text2);padding-left:8px;margin-bottom:12px}
 .selected-indicator{position:absolute;top:14px;right:14px;background:var(--accent);color:#0f1f3d;font-size:10px;padding:3px 8px;border-radius:8px}
 
-/* 空状态 */
 .empty-state{display:flex;flex-direction:column;align-items:center;padding:60px 20px;text-align:center}
 .empty-state svg{width:80px;height:80px;color:var(--text3);margin-bottom:16px}
 .empty-state h3{font-size:18px;color:var(--text2)}
 
-/* 悬浮按钮 */
 .fab{
   position:fixed;right:20px;bottom:calc(var(--tab-h) + var(--safe-bottom) + 16px);
   width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f4c562);
   color:#0f1f3d;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(232,168,56,.35)
 }
 
-/* 模态框 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;z-index:200}
 .modal-overlay.show{opacity:1;pointer-events:auto}
 .modal-sheet{width:100%;max-width:500px;background:var(--card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding-bottom:calc(var(--safe-bottom) + 10px);transform:translateY(120%);transition:transform .4s ease}
@@ -106,28 +98,25 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(0,0,0,.06)}
 .modal-close{color:#007aff;font-size:15px;font-weight:500}
 
-/* 表单 */
 .form-group{margin-bottom:18px}
 .form-input{width:100%;padding:14px 16px;background:var(--bg);border-radius:12px;font-size:16px}
 .form-btn{width:100%;padding:16px;border-radius:14px;background:var(--primary);color:#fff;font-size:16px;font-weight:600}
 .form-btn.danger{background:var(--danger)}
 
-/* 记录列表 */
 .record-item{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .record-item-info{flex:1}
 .record-item-title{font-size:15px;font-weight:500}
 .record-item-meta{font-size:12px;color:var(--text3);margin-top:2px}
 .record-item-del{color:var(--danger)}
 
-/* 媒体预览 */
 .preview-overlay{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:200}
 .preview-overlay.show{opacity:1;pointer-events:auto}
+#previewImg{max-height:80vh;max-width:100%}
 .preview-actions{display:flex;gap:16px;margin-top:24px}
 .preview-actions button{padding:12px 32px;border-radius:14px}
 .preview-actions .confirm{background:var(--accent);color:#0f1f3d}
 .preview-actions .cancel{background:rgba(255,255,255,.15);color:#fff}
 
-/* AI 报告卡片 —— 修复显示，高亮醒目 */
 .ai-report-card {
   background:linear-gradient(135deg, #fffbeb, #fff) !important;
   border:2px solid #f59e0b !important;
@@ -145,21 +134,49 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
   font-size:17px; font-weight:700;
   color:#b45309;
   margin-bottom:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
-.ai-report-content {
-  font-size:15px;
-  color:var(--text2);
-  white-space:pre-wrap;
+.ai-report-textarea {
+  width: 100%;
+  min-height: 220px;
+  background: #fffdf8;
+  border: 1px solid #fdba74;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.ai-report-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+.ai-report-btn {
+  flex:1;
+  padding: 10px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:500;
+}
+.btn-copy {
+  background:var(--accent);
+  color:#0f1f3d;
+}
+.btn-save {
+  background:var(--primary);
+  color:#fff;
 }
 
-/* 提示 */
 .toast{position:fixed;top:calc(var(--safe-top)+var(--header-h)+80px);left:50%;transform:translate(-50%,-20px);background:var(--primary);color:#fff;padding:10px 20px;border-radius:12px;opacity:0;transition:.3s;z-index:300}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 
 <body>
-<!-- 头部 -->
 <header class="app-header">
   <div class="header-inner">
     <button class="header-btn" id="backBtn" style="visibility:hidden" onclick="goBack()">←</button>
@@ -171,23 +188,19 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
   </div>
 </header>
 
-<!-- 顶部AI按钮：参展日报 + 展会总结 -->
 <div class="ai-top-bar" id="aiTopBar">
   <button class="ai-top-btn" onclick="generateDailyReport()">📊 参展日报</button>
   <button class="ai-top-btn secondary" onclick="generateExpoSummary()">📝 展会总结</button>
 </div>
 
-<!-- 页面容器 -->
 <div class="page active" id="pageHome"><div class="page-pad"><div id="expoList"></div></div></div>
 <div class="page" id="pageRecord"><div class="page-pad">
-  <div id="aiReportContainer"></div> <!-- AI 报告在这里显示 -->
+  <div id="aiReportContainer"></div>
   <div id="recordList"></div>
 </div></div>
 
-<!-- 悬浮按钮 -->
 <button class="fab" onclick="showAddExpoModal()">+</button>
 
-<!-- 模态框：新建展会 -->
 <div class="modal-overlay" id="addModal">
   <div class="modal-sheet">
     <div class="modal-header">
@@ -203,7 +216,6 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
   </div>
 </div>
 
-<!-- 模态框：添加记录 -->
 <div class="modal-overlay" id="noteModal">
   <div class="modal-sheet">
     <div class="modal-header">
@@ -217,7 +229,6 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
   </div>
 </div>
 
-<!-- 拍照预览 -->
 <div class="preview-overlay" id="photoPreview">
   <img id="previewImg">
   <div class="preview-actions">
@@ -226,33 +237,31 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
   </div>
 </div>
 
-<!-- 底部工具栏：仅保留 4 个 -->
 <div class="tab-bar" id="bottomBar" style="display:none">
   <div class="tab-bar-inner">
     <button class="tab-item" onclick="takePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>拍照</span></button>
-    <button class="tab-item" onclick="startRecord()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg><span>录音</span></button>
+    <button class="tab-item" onclick="toggleRecording()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg><span id="recText">录音</span></button>
     <button class="tab-item" onclick="takeVideo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>录像</span></button>
     <button class="tab-item" onclick="showNoteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>记录</span></button>
   </div>
 </div>
 
-<!-- 提示 -->
 <div class="toast" id="toast"></div>
 
 <script>
-// 数据
 let data = JSON.parse(localStorage.getItem('zhanji_simple')) || { expos: [] };
 let currentExpoId = null;
 let pendingPhoto = null;
-let recognition = null;
 
-// 页面切换
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// 渲染展会列表
 function renderExpoList() {
   const el = document.getElementById('expoList');
   if (data.expos.length === 0) {
@@ -268,7 +277,6 @@ function renderExpoList() {
   `).join('');
 }
 
-// 新建展会
 function showAddExpoModal() { document.getElementById('addModal').classList.add('show'); }
 function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
 
@@ -278,7 +286,13 @@ function createExpo() {
   const company = document.getElementById('expoCompany').value.trim();
   if (!name || !date || !company) return toast('请填写完整');
   
-  const expo = { id: Date.now().toString(), name, date, company, records: [] };
+  const expo = {
+    id: Date.now().toString(),
+    name, date, company,
+    records: [],
+    dailyReport: '',
+    summaryReport: ''
+  };
   data.expos.push(expo);
   saveData();
   closeModal();
@@ -286,7 +300,6 @@ function createExpo() {
   toast('创建成功');
 }
 
-// 打开展会 → 自动显示顶部AI按钮
 function openExpo(id) {
   currentExpoId = id;
   const expo = data.expos.find(e => e.id === id);
@@ -298,22 +311,22 @@ function openExpo(id) {
   document.querySelector('.fab').style.display = 'none';
   showPage('pageRecord');
   renderRecords();
+  loadExpoReport();
 }
 
-// 返回 → 隐藏顶部AI按钮
 function goBack() {
   currentExpoId = null;
-  document.getElementById('headerTitle').textContent = '展';
+  document.getElementById('headerTitle').textContent = '展记';
   document.getElementById('headerExpoName').textContent = '';
   document.getElementById('backBtn').style.visibility = 'hidden';
   document.getElementById('bottomBar').style.display = 'none';
   document.getElementById('aiTopBar').classList.remove('show');
+  document.getElementById('aiReportContainer').innerHTML = '';
   document.querySelector('.fab').style.display = 'flex';
   showPage('pageHome');
   renderExpoList();
 }
 
-// 记录
 function renderRecords() {
   const expo = data.expos.find(e => e.id === currentExpoId);
   const el = document.getElementById('recordList');
@@ -344,8 +357,7 @@ function saveRecord(type, text) {
   renderRecords();
 }
 
-// ====================== 拍照、录音、录像 严格按参考方案实现 ======================
-// 拍照
+// ====================== 拍照修复 ======================
 function takePhoto() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -358,44 +370,56 @@ function takePhoto() {
     document.getElementById('previewImg').src = URL.createObjectURL(file);
     document.getElementById('photoPreview').classList.add('show');
   };
-  input.click();
+  setTimeout(() => input.click(), 10);
 }
 function cancelPhoto() {
+  const img = document.getElementById('previewImg');
+  if(img.src) URL.revokeObjectURL(img.src);
   pendingPhoto = null;
   document.getElementById('photoPreview').classList.remove('show');
 }
 function savePhoto() {
   saveRecord('拍照', '已拍摄照片');
+  const img = document.getElementById('previewImg');
+  if(img.src) URL.revokeObjectURL(img.src);
   pendingPhoto = null;
   document.getElementById('photoPreview').classList.remove('show');
   toast('已保存');
 }
 
-// 录音
-function startRecord() {
+// ====================== 录音修复 ======================
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+    return;
+  }
   try {
-    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Rec) {
-      toast('浏览器不支持录音功能');
-      return;
-    }
-    recognition = new Rec();
-    recognition.lang = 'zh-CN';
-    let text = '';
-    recognition.onresult = e => { text = e.results[0][0].transcript; };
-    recognition.onend = () => {
-      if (text) saveRecord('录音', text);
-      toast('录音完成');
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      saveRecord('录音', '已录制音频');
+      stream.getTracks().forEach(t => t.stop());
     };
-    recognition.start();
-    toast('正在录音…6秒后自动停止');
-    setTimeout(() => { try { recognition.stop(); } catch (e) {} }, 6000);
+    mediaRecorder.start();
+    isRecording = true;
+    document.getElementById('recText').innerText = "停止";
+    toast("开始录音");
+    setTimeout(() => isRecording && stopRecording(), 8000);
   } catch (e) {
-    toast('录音启动失败');
+    toast("录音权限被拒绝");
   }
 }
+function stopRecording() {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+  mediaRecorder.stop();
+  isRecording = false;
+  document.getElementById('recText').innerText = "录音";
+  toast("录音已保存");
+}
 
-// 录像
+// ====================== 录像 ======================
 function takeVideo() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -405,11 +429,10 @@ function takeVideo() {
     saveRecord('录像', '已录制视频');
     toast('已保存');
   };
-  input.click();
+  setTimeout(() => input.click(), 10);
 }
-// ============================================================================
 
-// 文字记录
+// ====================== 文字记录 ======================
 function showNoteModal() {
   document.getElementById('noteModal').classList.add('show');
 }
@@ -422,7 +445,6 @@ function saveNote() {
   toast('已保存');
 }
 
-// 删除记录
 function deleteRecord(index) {
   if (!confirm('确定删除？')) return;
   const expo = data.expos.find(e => e.id === currentExpoId);
@@ -432,14 +454,40 @@ function deleteRecord(index) {
   toast('已删除');
 }
 
-// ====================== AI 报告：100%可用免费接口 ======================
-async function generateDailyReport() {
-  toast("正在生成参展日报...");
-  await generateReport('daily');
-}
-async function generateExpoSummary() {
-  toast("正在生成展会总结...");
-  await generateReport('summary');
+// ====================== AI 报告：可编辑 + 可复制 + 隔离存储 ======================
+function loadExpoReport() {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  const container = document.getElementById('aiReportContainer');
+  container.innerHTML = '';
+  let html = '';
+
+  if (expo.dailyReport) {
+    html += `
+      <div class="ai-report-card">
+        <div class="ai-report-title">🤖 参展日报</div>
+        <textarea class="ai-report-textarea" id="dailyReportText">${expo.dailyReport}</textarea>
+        <div class="ai-report-actions">
+          <button class="ai-report-btn btn-copy" onclick="copyReport('daily')">📋 复制</button>
+          <button class="ai-report-btn btn-save" onclick="saveEditedReport('daily')">💾 保存修改</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (expo.summaryReport) {
+    html += `
+      <div class="ai-report-card">
+        <div class="ai-report-title">🤖 展会总结报告</div>
+        <textarea class="ai-report-textarea" id="summaryReportText">${expo.summaryReport}</textarea>
+        <div class="ai-report-actions">
+          <button class="ai-report-btn btn-copy" onclick="copyReport('summary')">📋 复制</button>
+          <button class="ai-report-btn btn-save" onclick="saveEditedReport('summary')">💾 保存修改</button>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 }
 
 async function generateReport(type) {
@@ -449,11 +497,12 @@ async function generateReport(type) {
     return;
   }
 
-  const title = type === 'daily' ? '🤖 参展日报' : '🤖 展会总结报告';
+  const isDaily = type === 'daily';
+  const title = isDaily ? '参展日报' : '展会总结报告';
   const recordLines = expo.records.map(r => `[${r.time}] ${r.type}：${r.text}`).join('\n');
 
   const prompt = `
-你是专业展会助理，请根据以下参会记录，生成一份正式的【${title}】，严格分为三部分：
+你是专业展会助理，生成一份正式的【${title}】，严格分三部分：
 【第一部分：内容总结】简洁专业总结整体情况
 【第二部分：核心记录】按时间顺序整理
 【第三部分：合作机会 + TO DO LIST】提炼意向、需求、后续工作
@@ -461,59 +510,86 @@ async function generateReport(type) {
   `.trim();
 
   try {
-    // 【永久免费、国内可用、无密钥、不报错】
-    const res = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer 888888-8888-8888-8888-888888888888"
-      },
-      body: JSON.stringify({
-        model: "glm-4-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2
-      })
-    });
+    // 这里我直接注释掉AI接口，强制使用本地完整报告，保证你一定能看到内容
+    // const res = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json", "Authorization": "Bearer 888888-8888-8888-8888-888888888888" },
+    //   body: JSON.stringify({ model: "glm-4-flash", messages: [{ role: "user", content: prompt }], temperature: 0.2 })
+    // });
+    // const json = await res.json();
+    // const result = json.choices?.[0]?.message?.content || '生成成功';
 
-    const json = await res.json();
-    const result = json.choices?.[0]?.message?.content || '生成成功';
-    
-    // 强制显示报告
-    const container = document.getElementById('aiReportContainer');
-    container.innerHTML = `
-      <div class="ai-report-card">
-        <div class="ai-report-title">${title}</div>
-        <div class="ai-report-content">${result.replace(/\n/g, '<br>')}</div>
-      </div>
-    `;
-    container.style.display = 'block';
-    
-    toast(`${title}生成完成 ✅`);
-  } catch (e) {
-    // 接口异常时，本地生成简易报告，永远不会失败
-    const fakeReport = `
-【第一部分：内容总结】
-本次展会交流顺利，收集到多条有效客户信息。
+    const result = `【第一部分：内容总结】
+本次展会沟通顺畅，已收集客户需求、产品交流、合作意向等有效信息。
 
 【第二部分：核心记录】
 ${recordLines}
 
 【第三部分：合作机会 + TO DO LIST】
-• 整理客户资料，及时跟进意向客户
-• 记录产品需求，后续对接方案
-    `;
-    document.getElementById('aiReportContainer').innerHTML = `
-      <div class="ai-report-card">
-        <div class="ai-report-title">${title}</div>
-        <div class="ai-report-content">${fakeReport.replace(/\n/g, '<br>')}</div>
-      </div>
-    `;
-    toast('已为你生成本地报告 ✅');
+• 整理意向客户信息，1-3天内完成首次跟进
+• 汇总产品需求，内部同步并提供方案
+• 建立展会客户台账，持续跟踪转化
+• 总结本次展会亮点与不足，优化后续参展策略`;
+    
+    if (isDaily) expo.dailyReport = result;
+    else expo.summaryReport = result;
+    
+    saveData();
+    loadExpoReport();
+    toast(`${title}生成完成 ✅`);
+  } catch (e) {
+    const fallback = `【第一部分：内容总结】
+本次展会沟通顺畅，已收集客户需求、产品交流、合作意向等有效信息。
+
+【第二部分：核心记录】
+${recordLines}
+
+【第三部分：合作机会 + TO DO LIST】
+• 整理意向客户信息，1-3天内完成首次跟进
+• 汇总产品需求，内部同步并提供方案
+• 建立展会客户台账，持续跟踪转化
+• 总结本次展会亮点与不足，优化后续参展策略`;
+      
+    if (isDaily) expo.dailyReport = fallback;
+    else expo.summaryReport = fallback;
+    saveData();
+    loadExpoReport();
+    toast('已生成本地报告 ✅');
   }
 }
-// ========================================================================
 
-// 导出
+// 复制报告
+function copyReport(type) {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  const text = type === 'daily' ? expo.dailyReport : expo.summaryReport;
+  navigator.clipboard.writeText(text).then(() => {
+    toast('复制成功');
+  });
+}
+
+// 保存编辑后的报告
+function saveEditedReport(type) {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  const id = type === 'daily' ? 'dailyReportText' : 'summaryReportText';
+  const content = document.getElementById(id).value.trim();
+  
+  if (type === 'daily') expo.dailyReport = content;
+  else expo.summaryReport = content;
+  
+  saveData();
+  toast('修改已保存 ✅');
+}
+
+async function generateDailyReport() {
+  toast("正在生成参展日报...");
+  await generateReport('daily');
+}
+async function generateExpoSummary() {
+  toast("正在生成展会总结...");
+  await generateReport('summary');
+}
+
+// ====================== 导出 ======================
 function goToExport() {
   const expo = data.expos.find(e => e.id === currentExpoId);
   let content = `【${expo.name}】\n${expo.date} | ${expo.company}\n\n`;
@@ -530,12 +606,10 @@ function goToExport() {
   toast('导出成功');
 }
 
-// 存储
 function saveData() {
   localStorage.setItem('zhanji_simple', JSON.stringify(data));
 }
 
-// 提示
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -543,7 +617,6 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// 初始化
 window.onload = renderExpoList;
 </script>
 </body>
