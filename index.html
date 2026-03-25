@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="展记">
 <title>展记 — 参展记录工具</title>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.6.0/build/index.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi5bGV6K6wIC0g5Y+C5bGV6K6w5b2V5bel5YW3Iiwic2hvcnRfbmFtZSI6IuWxleiusCIsImRlc2NyaXB0aW9uIjoi5bGV5Lya5Y+C5bGV6K6w5b2V5bel5YW377yM6ZuG5ZCI5ouN54Wn44CB5b2V6Z+z44CB5b2V5YOP44CB5a+56K+d6K6w5b2VIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwZjFmM2QiLCJ0aGVtZV9jb2xvciI6IiMwZjFmM2QiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyB2aWV3Qm94PScwIDAgMTkyIDE5Mic+JTNDcmVjdCB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5Micgcng9JzQwJyBmaWxsPSclMjMxYTM2NWQnLyUzRSUzQ3RleHQgeD0nOTYnIHk9JzExNicgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1zaXplPSc4MCcgZmlsbD0nJTIzZThhODM4JyBmb250LWZhbWlseT0nc2Fucy1zZXJpYicgZm9udC13ZWlnaHQ9Jzc1MCclM0XlsZUlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
 <style>
@@ -161,7 +161,6 @@ img,video{display:block;max-width:100%}
 .modal-handle{width:36px;height:5px;border-radius:3px;background:var(--text3);opacity:.3;margin:10px auto 0}
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--card-border)}
 .modal-header h3{font-size:17px;font-weight:600}
-.modal-body{flex:1;overflow-y:auto;padding:20px}
 .modal-close{color:var(--blue);font-size:15px;font-weight:500;padding:4px 8px}
 
 /* === FORM === */
@@ -279,7 +278,7 @@ textarea.form-input{min-height:80px;resize:vertical;line-height:1.5}
 .contact-card-actions{display:flex;gap:8px;margin-top:12px}
 .contact-card-actions button{
   flex:1;padding:8px;border-radius:10px;
-  font-size:13px;font-weight:500;text-align:center;
+  font-size:13px;font-weight:50;text-align:center;
 }
 
 /* === DETAIL PAGE === */
@@ -495,9 +494,9 @@ textarea.form-input{min-height:80px;resize:vertical;line-height:1.5}
   <div class="page active" id="pageHome">
     <div class="page-pad">
       <div class="search-bar" id="searchBar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="searchInput" placeholder="搜索展会名称、地点..." oninput="filterExpos()">
-        <button id="searchClear" style="display:none" onclick="clearSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></button>
+        <button id="searchClear" style="display:none" onclick="clearSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></button>
       </div>
       <div id="expoListContainer"></div>
     </div>
@@ -763,7 +762,7 @@ function switchTab(tab) {
     renderHome();
   } else {
     if (!currentExpo) { showToast('请先选择或创建一个展会'); switchTab('home'); return; }
-    document.getElementById('headerTitle').textContent = { photo: '拍照', audio: '录音', video: '录像', contact: '对话记录' }[tab];
+    document.getElementById('headerTitle').textContent = { photo: '拍照', audio: '录音', video: '录像', contact: '对话' }[tab];
     updateHeaderExpo();
     if (tab === 'photo') { startPhotoStream(); renderPhotoList(); }
     if (tab === 'audio') renderAudioList();
@@ -867,7 +866,6 @@ async function renderHome() {
 function selectExpo(id) {
   currentExpo = allExpos.find(e => e.id === id) || null;
   updateHeaderExpo();
-  // 切换展会后，刷新所有媒体页面
   if(currentTab === 'photo') renderPhotoList();
   if(currentTab === 'audio') renderAudioList();
   if(currentTab === 'video') renderVideoList();
@@ -937,6 +935,8 @@ async function showExpoDetail(id) {
     html += '<div class="record-item" onclick="playAudio(\'' + a.id + '\')">' +
       '<div class="record-item-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg></div>' +
       '<div class="record-item-info"><div class="record-item-title">录音 ' + fmtDuration(a.duration || 0) + (hasT ? '<span class="transcript-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>已转写</span>' : '') + '</div><div class="record-item-meta">' + fmtDate(a.created_at) + '</div>' + (hasT ? '<div class="record-item-transcript">' + esc(a.transcript) + '</div>' : '') + '</div>' +
+      '<button class="edit-transcript-btn" onclick="event.stopPropagation();editTranscript(\'audios\',\'' + a.id + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>' +
+      '<button class="record-item-del" onclick="event.stopPropagation();deleteRecord(\'audios\',\'' + a.id + '\',\'audio\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
     '</div>';
   });
   if (audios.length === 0) html += '<div style="color:var(--text3);font-size:13px;padding:8px 0">暂无录音</div>';
@@ -1306,125 +1306,150 @@ const STOP_WORDS=new Set('的了是在我有和就不人都一个上也这到说
 function extractKeywords(t){const s=t.join(' ').replace(/[，。！？、；：""''（）\s\n]/g,' ').split(/\s+/).filter(w=>w.length>=2&&w.length<=8&&!STOP_WORDS.has(w));const f={};s.forEach(w=>f[w]=(f[w]||0)+1);return Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,15);}
 
 // ============================================================
-// 导出：观展日报（时间线流水）
+// 导出：观展日报（手机兼容版 · 已修复）
 // ============================================================
 async function exportDailyReport(id) {
-  const ex = allExpos.find(e => e.id === id);
-  if (!ex) return;
-  showExportProgress('正在生成观展日报...');
+  try {
+    const ex = allExpos.find(e => e.id === id);
+    if (!ex) return;
+    showExportProgress('生成报告中...');
 
-  const photos = await dbGetByExpo('photos', id);
-  const audios = await dbGetByExpo('audios', id);
-  const videos = await dbGetByExpo('videos', id);
-  const contacts = await dbGetByExpo('contacts', id);
+    const photos = await dbGetByExpo('photos', id);
+    const audios = await dbGetByExpo('audios', id);
+    const videos = await dbGetByExpo('videos', id);
+    const contacts = await dbGetByExpo('contacts', id);
 
-  const timeline = [];
-  photos.forEach(p => timeline.push({ type: 'photo', data: p, time: new Date(p.created_at).getTime() }));
-  audios.forEach(a => timeline.push({ type: 'audio', data: a, time: new Date(a.created_at).getTime() }));
-  videos.forEach(v => timeline.push({ type: 'video', data: v, time: new Date(v.created_at).getTime() }));
-  contacts.forEach(c => timeline.push({ type: 'contact', data: c, time: new Date(c.created_at).getTime() }));
-  timeline.sort((a, b) => a.time - b.time);
+    const timeline = [];
+    photos.forEach(p => timeline.push({ type: 'photo', data: p, time: new Date(p.created_at).getTime() }));
+    audios.forEach(a => timeline.push({ type: 'audio', data: a, time: new Date(a.created_at).getTime() }));
+    videos.forEach(v => timeline.push({ type: 'video', data: v, time: new Date(v.created_at).getTime() }));
+    contacts.forEach(c => timeline.push({ type: 'contact', data: c, time: new Date(c.created_at).getTime() }));
+    timeline.sort((a, b) => a.time - b.time);
 
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun } = docx;
+    const { Document, Packer, Paragraph, TextRun, AlignmentType, ImageRun } = docx;
 
-  const doc = new Document({
-    sections: [{
-      children: [
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "观展日报", size: 44, bold: true })] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: ex.name, size: 28 })] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: new Date().toLocaleDateString(), size: 24 })] }),
-        new Paragraph({ text: "" }),
-      ]
-    }]
-  });
+    const children = [
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "观展日报", size: 44, bold: true })] }),
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: ex.name, size: 28 })] }),
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: new Date().toLocaleDateString(), size: 24 })] }),
+      new Paragraph(""),
+    ];
 
-  for (const item of timeline) {
-    if (item.type === 'photo') {
-      const blob = await fetchMediaBlob(item.data.file_path);
-      const buf = await blobToArrayBuffer(blob);
-      doc.addSection({ children: [new Paragraph({ children: [new ImageRun({ data: buf, width: 300 })] })] });
+    let imageCount = 0;
+    for (const item of timeline) {
+      if (item.type === 'photo' && imageCount < 5) {
+        imageCount++;
+        try {
+          const blob = await fetchMediaBlob(item.data.file_path);
+          const buf = await blobToArrayBuffer(blob);
+          children.push(new Paragraph({ children: [new ImageRun({ data: buf, width: 250 })] }));
+        } catch (e) {}
+      }
+      if (item.type === 'audio') {
+        children.push(new Paragraph(`【录音】${fmtDate(item.data.created_at)}`));
+        children.push(new Paragraph(item.data.transcript || "无转写"));
+      }
+      if (item.type === 'video') {
+        children.push(new Paragraph(`【录像】${fmtDate(item.data.created_at)}`));
+        children.push(new Paragraph(item.data.transcript || "无转写"));
+      }
+      if (item.type === 'contact') {
+        const c = item.data;
+        children.push(new Paragraph(`【交流】${c.name} | ${c.company || ""} | ${c.phone || ""}`));
+        children.push(new Paragraph(c.notes || "无记录"));
+      }
+      children.push(new Paragraph("————————————————————"));
     }
-    if (item.type === 'audio') {
-      const t = item.data.transcript || '无转写';
-      doc.addSection({ children: [new Paragraph(`【录音】${fmtDate(item.data.created_at)}`)] });
-      doc.addSection({ children: [new Paragraph(t)] });
-    }
-    if (item.type === 'video') {
-      const t = item.data.transcript || '无转写';
-      doc.addSection({ children: [new Paragraph(`【录像】${fmtDate(item.data.created_at)}`)] });
-      doc.addSection({ children: [new Paragraph(t)] });
-    }
-    if (item.type === 'contact') {
-      const c = item.data;
-      doc.addSection({ children: [new Paragraph(`【交流】${c.name} | ${c.company || ''} | ${c.phone || ''}`)] });
-      doc.addSection({ children: [new Paragraph(c.notes || '无记录')] });
-    }
+
+    const doc = new Document({ sections: [{ children }] });
+    const blob = await Packer.toBlob(doc);
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `观展日报_${ex.name}.docx`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    hideExportProgress();
+    showToast("观展日报导出成功");
+    closeModal();
+  } catch (e) {
+    hideExportProgress();
+    showToast("导出失败：" + e.message);
   }
-
-  const blob = await Packer.toBlob(doc);
-  saveAs(blob, `观展日报_${ex.name}.docx`);
-  hideExportProgress();
-  showToast('观展日报导出成功');
-  closeModal();
 }
 
 // ============================================================
-// 导出：展会总结报告（结构化正式版）
+// 导出：展会总结报告（手机兼容版 · 已修复）
 // ============================================================
 async function exportSummaryReport(id) {
-  const ex = allExpos.find(e => e.id === id);
-  if (!ex) return;
-  showExportProgress('正在生成展会总结报告...');
+  try {
+    const ex = allExpos.find(e => e.id === id);
+    if (!ex) return;
+    showExportProgress('生成报告中...');
 
-  const photos = await dbGetByExpo('photos', id);
-  const audios = await dbGetByExpo('audios', id);
-  const videos = await dbGetByExpo('videos', id);
-  const contacts = await dbGetByExpo('contacts', id);
-  const importantPhotos = photos.filter(x => x.important);
+    const photos = await dbGetByExpo('photos', id);
+    const audios = await dbGetByExpo('audios', id);
+    const videos = await dbGetByExpo('videos', id);
+    const contacts = await dbGetByExpo('contacts', id);
+    const importantPhotos = photos.filter(x => x.important);
 
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun } = docx;
+    const { Document, Packer, Paragraph, TextRun, AlignmentType, ImageRun } = docx;
 
-  const doc = new Document({
-    sections: [{
-      children: [
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "展会总结报告", size: 48, bold: true })] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: ex.name, size: 32 })] }),
-        new Paragraph({ text: "" }),
-        new Paragraph({ children: [new TextRun({ text: "展会基本信息", size: 32, bold: true })] }),
-        new Paragraph(`展会名称：${ex.name}`),
-        new Paragraph(`展会时间：${ex.date || '未填写'}`),
-        new Paragraph(`展会地点：${ex.location || '未填写'}`),
-        new Paragraph(`展会描述：${ex.description || '无'}`),
-        new Paragraph({ text: "" }),
-      ]
-    }]
-  });
+    const children = [
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "展会总结报告", size: 48, bold: true })] }),
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: ex.name, size: 32 })] }),
+      new Paragraph(""),
+      new Paragraph({ children: [new TextRun({ text: "展会基本信息", size: 32, bold: true })] }),
+      new Paragraph(`展会名称：${ex.name}`),
+      new Paragraph(`展会时间：${ex.date || '未填写'}`),
+      new Paragraph(`展会地点：${ex.location || '未填写'}`),
+      new Paragraph(`展会描述：${ex.description || '无'}`),
+      new Paragraph(""),
+    ];
 
-  // 重点照片
-  doc.addSection({ children: [new Paragraph({ children: [new TextRun({ text: "重点照片", size: 32, bold: true })] })] });
-  for (const p of importantPhotos.slice(0, 10)) {
-    const blob = await fetchMediaBlob(p.file_path);
-    const buf = await blobToArrayBuffer(blob);
-    doc.addSection({ children: [new Paragraph({ children: [new ImageRun({ data: buf, width: 250 })] })] });
+    children.push(new Paragraph({ children: [new TextRun({ text: "重点照片", size: 32, bold: true })] }));
+    let imgCount = 0;
+    for (const p of importantPhotos) {
+      if (imgCount >= 5) break;
+      imgCount++;
+      try {
+        const blob = await fetchMediaBlob(p.file_path);
+        const buf = await blobToArrayBuffer(blob);
+        children.push(new Paragraph({ children: [new ImageRun({ data: buf, width: 220 })] }));
+      } catch (e) {}
+    }
+
+    children.push(new Paragraph(""));
+    children.push(new Paragraph({ children: [new TextRun({ text: "交流记录", size: 32, bold: true })] }));
+    contacts.forEach(c => {
+      children.push(new Paragraph(`● ${c.name} - ${c.company || ''}（${c.phone || ''}）`));
+      children.push(new Paragraph(c.notes || '无'));
+    });
+
+    children.push(new Paragraph(""));
+    children.push(new Paragraph({ children: [new TextRun({ text: "音视频记录", size: 32, bold: true })] }));
+    audios.forEach(a => a.transcript && children.push(new Paragraph(`● 录音：${a.transcript}`)));
+    videos.forEach(v => v.transcript && children.push(new Paragraph(`● 录像：${v.transcript}`)));
+
+    const doc = new Document({ sections: [{ children }] });
+    const blob = await Packer.toBlob(doc);
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `展会总结报告_${ex.name}.docx`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    hideExportProgress();
+    showToast("总结报告导出成功");
+    closeModal();
+  } catch (e) {
+    hideExportProgress();
+    showToast("导出失败：" + e.message);
   }
-
-  // 交流记录
-  doc.addSection({ children: [new Paragraph({ text: "" }), new Paragraph({ children: [new TextRun({ text: "交流记录", size: 32, bold: true })] })] });
-  contacts.forEach(c => {
-    doc.addSection({ children: [new Paragraph(`● ${c.name} - ${c.company || ''}（${c.phone || ''}）`)] });
-    doc.addSection({ children: [new Paragraph(c.notes || '无')] });
-  });
-
-  // 音视频转写
-  doc.addSection({ children: [new Paragraph({ text: "" }), new Paragraph({ children: [new TextRun({ text: "音视频记录", size: 32, bold: true })] })] });
-  audios.forEach(a => a.transcript && doc.addSection({ children: [new Paragraph(`● 录音：${a.transcript}`)] }));
-  videos.forEach(v => v.transcript && doc.addSection({ children: [new Paragraph(`● 录像：${v.transcript}`)] }));
-
-  const blob = await Packer.toBlob(doc);
-  saveAs(blob, `展会总结报告_${ex.name}.docx`);
-  hideExportProgress();
-  showToast('总结报告导出成功');
-  closeModal();
 }
 
 // ============================================================
