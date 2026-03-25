@@ -127,22 +127,27 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 .preview-actions .confirm{background:var(--accent);color:#0f1f3d}
 .preview-actions .cancel{background:rgba(255,255,255,.15);color:#fff}
 
-/* AI 报告卡片 */
+/* AI 报告卡片 —— 修复显示，高亮醒目 */
 .ai-report-card {
-  background:linear-gradient(135deg, #fffbeb, #fff);
-  border:1px solid #fcd34d;
-  border-radius:var(--radius-lg);
-  padding:18px;
-  margin-bottom:16px;
-  line-height:1.6;
+  background:linear-gradient(135deg, #fffbeb, #fff) !important;
+  border:2px solid #f59e0b !important;
+  border-radius:var(--radius-lg) !important;
+  padding:20px !important;
+  margin:10px 0 20px 0 !important;
+  line-height:1.7 !important;
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  z-index:10 !important;
+  position:relative !important;
 }
 .ai-report-title {
-  font-size:16px; font-weight:600;
-  color:#92400e;
+  font-size:17px; font-weight:700;
+  color:#b45309;
   margin-bottom:12px;
 }
 .ai-report-content {
-  font-size:14px;
+  font-size:15px;
   color:var(--text2);
   white-space:pre-wrap;
 }
@@ -175,7 +180,7 @@ input,textarea{font:inherit;border:none;background:transparent;outline:none}
 <!-- 页面容器 -->
 <div class="page active" id="pageHome"><div class="page-pad"><div id="expoList"></div></div></div>
 <div class="page" id="pageRecord"><div class="page-pad">
-  <div id="aiReportContainer"></div>
+  <div id="aiReportContainer"></div> <!-- AI 报告在这里显示 -->
   <div id="recordList"></div>
 </div></div>
 
@@ -312,9 +317,7 @@ function goBack() {
 function renderRecords() {
   const expo = data.expos.find(e => e.id === currentExpoId);
   const el = document.getElementById('recordList');
-  const aiEl = document.getElementById('aiReportContainer');
   
-  aiEl.innerHTML = '';
   if (!expo.records || expo.records.length === 0) {
     el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/></svg><h3>暂无记录</h3></div>`;
     return;
@@ -341,6 +344,7 @@ function saveRecord(type, text) {
   renderRecords();
 }
 
+// ====================== 拍照、录音、录像 严格按参考方案实现 ======================
 // 拍照
 function takePhoto() {
   const input = document.createElement('input');
@@ -356,12 +360,10 @@ function takePhoto() {
   };
   input.click();
 }
-
 function cancelPhoto() {
   pendingPhoto = null;
   document.getElementById('photoPreview').classList.remove('show');
 }
-
 function savePhoto() {
   saveRecord('拍照', '已拍摄照片');
   pendingPhoto = null;
@@ -377,27 +379,17 @@ function startRecord() {
       toast('浏览器不支持录音功能');
       return;
     }
-  
     recognition = new Rec();
     recognition.lang = 'zh-CN';
     let text = '';
-  
-    recognition.onresult = function(e) {
-      text = e.results[0][0].transcript;
-    };
-  
-    recognition.onend = function() {
-      if (text) {
-        saveRecord('录音', text);
-      }
+    recognition.onresult = e => { text = e.results[0][0].transcript; };
+    recognition.onend = () => {
+      if (text) saveRecord('录音', text);
       toast('录音完成');
     };
-  
     recognition.start();
     toast('正在录音…6秒后自动停止');
-    setTimeout(() => {
-      try { recognition.stop(); } catch (e) {}
-    }, 6000);
+    setTimeout(() => { try { recognition.stop(); } catch (e) {} }, 6000);
   } catch (e) {
     toast('录音启动失败');
   }
@@ -415,6 +407,7 @@ function takeVideo() {
   };
   input.click();
 }
+// ============================================================================
 
 // 文字记录
 function showNoteModal() {
@@ -439,7 +432,7 @@ function deleteRecord(index) {
   toast('已删除');
 }
 
-// ====================== AI 参展日报 + 展会总结 ======================
+// ====================== AI 报告：修复显示问题 + 稳定接口 ======================
 async function generateDailyReport() {
   toast("正在生成参展日报...");
   await generateReport('daily');
@@ -457,34 +450,27 @@ async function generateReport(type) {
   }
 
   const title = type === 'daily' ? '🤖 参展日报' : '🤖 展会总结报告';
-
   const recordLines = expo.records.map(r => `[${r.time}] ${r.type}：${r.text}`).join('\n');
 
   const prompt = `
 你是专业展会助理，请根据以下参会记录，生成一份正式的【${title}】，严格分为三部分：
-
-【第一部分：内容总结】
-基于所有交流记录、语音、图片，用简洁专业的语言总结整体情况。
-
-【第二部分：核心记录（按时间顺序）】
-${recordLines}
-
-【第三部分：合作机会筛选 + TO DO LIST】
-1. 合作机会：从记录中提炼有价值的合作意向、客户需求、潜在订单
-2. TO DO LIST：输出必须执行的后续工作、跟进事项、联系人、时间节点
-
-要求：条理清晰、专业简洁、可直接用于工作汇报。
-记录如下：
-${expo.records.map(r => `【${r.type}】${r.text}`).join('\n')}
+【第一部分：内容总结】简洁专业总结整体情况
+【第二部分：核心记录】按时间顺序整理
+【第三部分：合作机会 + TO DO LIST】提炼意向、需求、后续工作
+记录：${recordLines}
   `.trim();
 
   try {
-    const res = await fetch('https://api.aigcfun.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer free' },
+    // 稳定可用接口
+    const res = await fetch("https://api.moonshot.cn/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-52f7a929f67f4938a977c4a0e0215d6f"
+      },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
+        model: "moonshot-v1-8k",
+        messages: [{ role: "user", content: prompt }],
         temperature: 0.2
       })
     });
@@ -492,19 +478,23 @@ ${expo.records.map(r => `【${r.type}】${r.text}`).join('\n')}
     const json = await res.json();
     const result = json.choices?.[0]?.message?.content || '生成失败，请重试';
     
-    document.getElementById('aiReportContainer').innerHTML = `
+    // 强制显示报告
+    const container = document.getElementById('aiReportContainer');
+    container.innerHTML = `
       <div class="ai-report-card">
         <div class="ai-report-title">${title}</div>
         <div class="ai-report-content">${result.replace(/\n/g, '<br>')}</div>
       </div>
     `;
-    toast(`${title}生成完成`);
+    container.style.display = 'block';
+    
+    toast(`${title}生成完成 ✅`);
   } catch (e) {
     console.error(e);
-    toast('网络异常，生成失败');
+    toast('生成失败，请稍后重试');
   }
 }
-// ====================================================================
+// ====================================================================================
 
 // 导出
 function goToExport() {
