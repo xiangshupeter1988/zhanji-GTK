@@ -1,551 +1,543 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="展记">
-    <link rel="apple-touch-icon" href="https://picsum.photos/192/192">
-    <title>展记 - 智能展会记录</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="展记">
+<meta name="theme-color" content="#0f1f3d">
+<title>展记</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a365d;--accent:#e8a838;--bg:#f2f2f7;--card:#fff;
+  --text:#1c1c1e;--text2:#636366;--text3:#aeaeb2;--danger:#ff3b30;
+  --safe-top:env(safe-area-inset-top,20px);--safe-bottom:env(safe-area-inset-bottom,20px);
+  --header-h:56px;--tab-h:82px;--radius:14px;--radius-lg:20px;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
+button{font:inherit;border:none;background:none;cursor:pointer;outline:none}
+input,textarea{font:inherit;border:none;background:transparent;outline:none}
 
-        :root {
-            --primary: #007AFF;
-            --bg: #F5F7FA;
-            --card: #FFFFFF;
-            --text: #1D1D1F;
-            --gray: #8E8E93;
-            --light-gray: #E5E7EA;
-            --danger: #FF3B30;
-        }
+/* 头部 */
+.app-header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding-top:var(--safe-top);
+  background:rgba(15,31,61,.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.header-inner{height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.header-title{color:#fff;font-size:17px;font-weight:600;flex:1;text-align:center}
+.header-btn{color:var(--accent);font-size:15px;padding:8px;min-width:44px}
+.header-expo-name{font-size:11px;color:var(--accent);text-align:center;padding-bottom:6px}
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0F0F10;
-                --card: #1C1C1E;
-                --text: #F5F5F7;
-                --gray: #98989D;
-                --light-gray: #313136;
-            }
-        }
+/* 顶部AI操作栏 */
+.ai-top-bar{
+  position:fixed;top:calc(var(--safe-top) + var(--header-h));left:0;right:0;z-index:90;
+  background:rgba(15,31,61,.88);backdrop-filter:blur(20px);
+  padding:10px 16px;display:flex;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:none;
+}
+.ai-top-bar.show{display:flex}
+.ai-top-btn{
+  flex:1;padding:12px 14px;border-radius:12px;
+  font-size:15px;font-weight:500;
+  background:var(--accent);color:#0f1f3d;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.ai-top-btn.secondary{
+  background:rgba(255,255,255,.12);color:#fff;
+}
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
+/* 底部标签栏 */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  padding-bottom:var(--safe-bottom);
+  background:rgba(15,31,61,.92);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.tab-bar-inner{display:flex;height:50px}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.45);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tab-item.active{color:var(--accent)}
+.tab-item svg{width:22px;height:22px}
+.tab-item span{font-size:9px;margin-top:2px}
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+/* 页面 */
+.page{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  padding-top:calc(var(--safe-top) + var(--header-h) + 60px);
+  padding-bottom:calc(var(--tab-h) + var(--safe-bottom) + 10px);
+  overflow-y:auto;opacity:0;pointer-events:none;transition:all .3s;
+}
+.page.active{opacity:1;pointer-events:auto}
+.page-pad{padding:16px}
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+/* 展会卡片 */
+.expo-card{
+  background:var(--card);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.06);position:relative
+}
+.expo-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.expo-card-name{font-size:17px;font-weight:600;margin-bottom:4px;padding-left:8px}
+.expo-card-info{font-size:13px;color:var(--text2);padding-left:8px;margin-bottom:12px}
+.selected-indicator{position:absolute;top:14px;right:14px;background:var(--accent);color:#0f1f3d;font-size:10px;padding:3px 8px;border-radius:8px}
 
-        header h1 {
-            font-size: 34px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
+/* 空状态 */
+.empty-state{display:flex;flex-direction:column;align-items:center;padding:60px 20px;text-align:center}
+.empty-state svg{width:80px;height:80px;color:var(--text3);margin-bottom:16px}
+.empty-state h3{font-size:18px;color:var(--text2)}
 
-        header p {
-            color: var(--gray);
-            font-size: 15px;
-        }
+/* 悬浮按钮 */
+.fab{
+  position:fixed;right:20px;bottom:calc(var(--tab-h) + var(--safe-bottom) + 16px);
+  width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f4c562);
+  color:#0f1f3d;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(232,168,56,.35)
+}
 
-        .card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
+/* 模态框 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;z-index:200}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-sheet{width:100%;max-width:500px;background:var(--card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding-bottom:calc(var(--safe-bottom) + 10px);transform:translateY(120%);transition:transform .4s ease}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(0,0,0,.06)}
+.modal-close{color:#007aff;font-size:15px;font-weight:500}
 
-        .section-title {
-            font-size: 19px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+/* 表单 */
+.form-group{margin-bottom:18px}
+.form-input{width:100%;padding:14px 16px;background:var(--bg);border-radius:12px;font-size:16px}
+.form-btn{width:100%;padding:16px;border-radius:14px;background:var(--primary);color:#fff;font-size:16px;font-weight:600}
+.form-btn.danger{background:var(--danger)}
 
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+/* 记录列表 */
+.record-item{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.record-item-info{flex:1}
+.record-item-title{font-size:15px;font-weight:500}
+.record-item-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.record-item-del{color:var(--danger)}
 
-        button {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: none;
-            background: var(--primary);
-            color: white;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-            text-align: center;
-        }
+/* 媒体预览 */
+.preview-overlay{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:200}
+.preview-overlay.show{opacity:1;pointer-events:auto}
+.preview-actions{display:flex;gap:16px;margin-top:24px}
+.preview-actions button{padding:12px 32px;border-radius:14px}
+.preview-actions .confirm{background:var(--accent);color:#0f1f3d}
+.preview-actions .cancel{background:rgba(255,255,255,.15);color:#fff}
 
-        button.gray {
-            background: var(--light-gray);
-            color: var(--text);
-        }
+/* AI 报告卡片 */
+.ai-report-card {
+  background:linear-gradient(135deg, #fffbeb, #fff);
+  border:1px solid #fcd34d;
+  border-radius:var(--radius-lg);
+  padding:18px;
+  margin-bottom:16px;
+  line-height:1.6;
+}
+.ai-report-title {
+  font-size:16px; font-weight:600;
+  color:#92400e;
+  margin-bottom:12px;
+}
+.ai-report-content {
+  font-size:14px;
+  color:var(--text2);
+  white-space:pre-wrap;
+}
 
-        button.danger {
-            background: var(--danger);
-        }
-
-        button:active {
-            transform: scale(0.97);
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: 1px solid var(--light-gray);
-            background: var(--card);
-            color: var(--text);
-            font-size: 16px;
-            margin-bottom: 12px;
-            outline: none;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--primary);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .media-record {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .media-record button {
-            flex: 1;
-            padding: 10px;
-            font-size: 14px;
-        }
-
-        .record-item {
-            padding: 12px;
-            background: var(--light-gray);
-            border-radius: 10px;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .export-area {
-            margin-top: 20px;
-        }
-
-        .export-btns {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        #result {
-            white-space: pre-wrap;
-            padding: 16px;
-            background: var(--light-gray);
-            border-radius: 12px;
-            font-size: 14px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .tab-btns {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 16px;
-        }
-
-        .tab-btns button {
-            flex: 1;
-            background: var(--light-gray);
-            color: var(--text);
-        }
-
-        .tab-btns button.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .empty-tip {
-            text-align: center;
-            color: var(--gray);
-            padding: 30px 0;
-            font-size: 15px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .toast.show {
-            display: block;
-        }
-    </style>
+/* 提示 */
+.toast{position:fixed;top:calc(var(--safe-top)+var(--header-h)+80px);left:50%;transform:translate(-50%,-20px);background:var(--primary);color:#fff;padding:10px 20px;border-radius:12px;opacity:0;transition:.3s;z-index:300}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>展记</h1>
-            <p>智能展会记录助手 · 高效整理 · 一键导出</p>
-        </header>
-
-        <!-- 标签栏 -->
-        <div class="card">
-            <div class="tab-btns">
-                <button class="active" data-tab="plan">展会计划</button>
-                <button data-tab="record">现场记录</button>
-                <button data-tab="export">导出报告</button>
-            </div>
-
-            <!-- 展会计划 -->
-            <div id="plan" class="tab-content active">
-                <div class="section-title">
-                    <span>📅</span> 展会计划管理
-                </div>
-                <input type="text" id="expoName" placeholder="展会名称">
-                <input type="text" id="expoDate" placeholder="展会日期（例：2026-03-25）">
-                <input type="text" id="expoCompany" placeholder="参展企业">
-                <button onclick="savePlan()">保存展会信息</button>
-            </div>
-
-            <!-- 现场记录 -->
-            <div id="record" class="tab-content">
-                <div class="section-title">
-                    <span>📝</span> 展会现场记录
-                </div>
-                <div class="media-record">
-                    <button onclick="takePhoto()">📷 拍照</button>
-                    <button onclick="startRecord()" id="recordBtn">🎙️ 录音转文字</button>
-                    <button onclick="takeVideo()">🎥 录像</button>
-                </div>
-                <textarea id="noteContent" placeholder="文字记录/交流内容/产品信息..."></textarea>
-                <button onclick="saveRecord()">💾 保存本条记录</button>
-                <div id="recordList"></div>
-            </div>
-
-            <!-- 导出报告 -->
-            <div id="export" class="tab-content">
-                <div class="section-title">
-                    <span>📊</span> 智能导出报告
-                </div>
-                <div class="export-btns">
-                    <button onclick="generateDaily()">📄 生成参展日报</button>
-                    <button onclick="generateSummary()">📋 生成展会总结</button>
-                </div>
-                <div id="result"></div>
-                <button class="gray" onclick="copyResult()" style="margin-top:12px;">📋 复制文本</button>
-            </div>
-        </div>
+<!-- 头部 -->
+<header class="app-header">
+  <div class="header-inner">
+    <button class="header-btn" id="backBtn" style="visibility:hidden" onclick="goBack()">←</button>
+    <div style="flex:1">
+      <div class="header-title" id="headerTitle">展记</div>
+      <div class="header-expo-name" id="headerExpoName"></div>
     </div>
+    <button class="header-btn" style="visibility:hidden"></button>
+  </div>
+</header>
 
-    <div class="toast" id="toast"></div>
+<!-- 顶部AI按钮：参展日报 + 展会总结 -->
+<div class="ai-top-bar" id="aiTopBar">
+  <button class="ai-top-btn" onclick="generateDailyReport()">📊 参展日报</button>
+  <button class="ai-top-btn secondary" onclick="generateExpoSummary()">📝 展会总结</button>
+</div>
 
-    <script>
-        // 全局数据
-        let expoData = JSON.parse(localStorage.getItem('expoData')) || {
-            plan: {},
-            records: []
-        };
-        let recognition = null;
-        let isRecording = false;
+<!-- 页面容器 -->
+<div class="page active" id="pageHome"><div class="page-pad"><div id="expoList"></div></div></div>
+<div class="page" id="pageRecord"><div class="page-pad">
+  <div id="aiReportContainer"></div>
+  <div id="recordList"></div>
+</div></div>
 
-        // 标签切换
-        document.querySelectorAll('.tab-btns button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btns button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const tab = btn.dataset.tab;
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById(tab).classList.add('active');
-                if(tab === 'record') renderRecords();
-            });
-        });
+<!-- 悬浮按钮 -->
+<button class="fab" onclick="showAddExpoModal()">+</button>
 
-        // 保存展会计划
-        function savePlan() {
-            const name = document.getElementById('expoName').value;
-            const date = document.getElementById('expoDate').value;
-            const company = document.getElementById('expoCompany').value;
-            if(!name || !date || !company) return showToast('请填写完整信息');
-            expoData.plan = { name, date, company };
-            localStorage.setItem('expoData', JSON.stringify(expoData));
-            showToast('展会信息已保存');
-        }
+<!-- 模态框：新建展会 -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3>新建展会</h3>
+      <button class="modal-close" onclick="closeModal()">关闭</button>
+    </div>
+    <div style="padding:20px">
+      <div class="form-group"><input class="form-input" id="expoName" placeholder="展会名称"></div>
+      <div class="form-group"><input class="form-input" id="expoDate" placeholder="展会日期"></div>
+      <div class="form-group"><input class="form-input" id="expoCompany" placeholder="参展企业"></div>
+      <button class="form-btn" onclick="createExpo()">保存</button>
+    </div>
+  </div>
+</div>
 
-        // 拍照
-        function takePhoto() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'camera';
-            input.onchange = e => {
-                const file = e.target.files[0];
-                if(file) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        saveMediaRecord('拍照', '已拍摄图片');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.click();
-        }
+<!-- 模态框：添加记录 -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3>添加记录</h3>
+      <button class="modal-close" onclick="closeModal()">关闭</button>
+    </div>
+    <div style="padding:20px">
+      <textarea class="form-input" id="noteContent" rows="5" placeholder="输入交流内容、产品信息、客户需求"></textarea>
+      <button class="form-btn" onclick="saveNote()">保存</button>
+    </div>
+  </div>
+</div>
 
-        // 录像
-        function takeVideo() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'video/*';
-            input.capture = 'camcorder';
-            input.onchange = () => {
-                saveMediaRecord('录像', '已录制视频');
-            };
-            input.click();
-        }
+<!-- 拍照预览 -->
+<div class="preview-overlay" id="photoPreview">
+  <img id="previewImg">
+  <div class="preview-actions">
+    <button class="cancel" onclick="cancelPhoto()">重拍</button>
+    <button class="confirm" onclick="savePhoto()">保存</button>
+  </div>
+</div>
 
-        // 录音转文字
-        function startRecord() {
-            const btn = document.getElementById('recordBtn');
-            if(!isRecording) {
-                if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                    return showToast('浏览器不支持语音转文字');
-                }
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.lang = 'zh-CN';
-                recognition.continuous = true;
-                recognition.interimResults = false;
-                let text = '';
-                recognition.onresult = e => {
-                    text += e.results[0][0].transcript + ' ';
-                    document.getElementById('noteContent').value = text;
-                };
-                recognition.start();
-                isRecording = true;
-                btn.textContent = '⏹ 停止录音';
-                btn.style.background = '#FF3B30';
-                showToast('正在录音，说话即可转文字');
-            } else {
-                recognition.stop();
-                isRecording = false;
-                btn.textContent = '🎙️ 录音转文字';
-                btn.style.background = '';
-                showToast('录音已停止');
-            }
-        }
+<!-- 底部工具栏：仅保留 4 个 -->
+<div class="tab-bar" id="bottomBar" style="display:none">
+  <div class="tab-bar-inner">
+    <button class="tab-item" onclick="takePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>拍照</span></button>
+    <button class="tab-item" onclick="startRecord()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg><span>录音</span></button>
+    <button class="tab-item" onclick="takeVideo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>录像</span></button>
+    <button class="tab-item" onclick="showNoteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>记录</span></button>
+  </div>
+</div>
 
-        // 保存媒体记录
-        function saveMediaRecord(type, content) {
-            const record = {
-                time: new Date().toLocaleString(),
-                type, content
-            };
-            expoData.records.unshift(record);
-            localStorage.setItem('expoData', JSON.stringify(expoData));
-            renderRecords();
-            showToast(`${type}记录已保存`);
-        }
+<!-- 提示 -->
+<div class="toast" id="toast"></div>
 
-        // 保存文字记录
-        function saveRecord() {
-            const content = document.getElementById('noteContent').value.trim();
-            if(!content) return showToast('请输入记录内容');
-            const record = {
-                time: new Date().toLocaleString(),
-                type: '文字',
-                content
-            };
-            expoData.records.unshift(record);
-            localStorage.setItem('expoData', JSON.stringify(expoData));
-            document.getElementById('noteContent').value = '';
-            renderRecords();
-            showToast('记录已保存');
-        }
+<script>
+// 数据
+let data = JSON.parse(localStorage.getItem('zhanji_simple')) || { expos: [] };
+let currentExpoId = null;
+let pendingPhoto = null;
+let recognition = null;
 
-        // 渲染记录列表
-        function renderRecords() {
-            const list = document.getElementById('recordList');
-            if(expoData.records.length === 0) {
-                list.innerHTML = '<div class="empty-tip">暂无记录</div>';
-                return;
-            }
-            list.innerHTML = expoData.records.map((r, i) => `
-                <div class="record-item">
-                    <div style="font-weight:600;">${r.type} · ${r.time}</div>
-                    <div style="margin-top:4px;color:var(--gray);">${r.content.substring(0,60)}${r.content.length>60?'...':''}</div>
-                </div>
-            `).join('');
-        }
+// 页面切换
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-        // 免费AI总结（使用免费开源接口）
-        async function aiSummary(prompt) {
-            try {
-                const res = await fetch('https://api-inference.huggingface.co/models/facebook/bart-large-cnn', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ inputs: prompt, parameters: { max_length: 150 } })
-                });
-                const data = await res.json();
-                return data[0]?.summary_text || 'AI总结生成完成';
-            } catch(e) {
-                return 'AI总结：已完成核心内容整理';
-            }
-        }
+// 渲染展会列表
+function renderExpoList() {
+  const el = document.getElementById('expoList');
+  if (data.expos.length === 0) {
+    el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/></svg><h3>暂无展会</h3></div>`;
+    return;
+  }
+  el.innerHTML = data.expos.map(e => `
+    <div class="expo-card" onclick="openExpo('${e.id}')">
+      ${e.id === currentExpoId ? '<div class="selected-indicator">当前</div>' : ''}
+      <div class="expo-card-name">${e.name}</div>
+      <div class="expo-card-info">${e.date} | ${e.company}</div>
+    </div>
+  `).join('');
+}
 
-        // 生成日报
-        async function generateDaily() {
-            if(expoData.records.length === 0) return showToast('请先添加记录');
-            showToast('AI生成中...');
-            const plan = expoData.plan;
-            const records = expoData.records;
-            const recordText = records.map(r => `【${r.type}】${r.time}：${r.content}`).join('\n');
-            const summary = await aiSummary(recordText);
-            const todo = 'AI待办：1. 整理重点客户资料 2. 跟进意向合作方 3. 补充展会资料归档';
-            const result = `
-【参展日报】
-展会：${plan.name || '未设置'}
-日期：${plan.date || '未设置'}
-企业：${plan.company || '未设置'}
+// 新建展会
+function showAddExpoModal() { document.getElementById('addModal').classList.add('show'); }
+function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
 
-一、AI智能总结
-${summary}
+function createExpo() {
+  const name = document.getElementById('expoName').value.trim();
+  const date = document.getElementById('expoDate').value.trim();
+  const company = document.getElementById('expoCompany').value.trim();
+  if (!name || !date || !company) return toast('请填写完整');
+  
+  const expo = { id: Date.now().toString(), name, date, company, records: [] };
+  data.expos.push(expo);
+  saveData();
+  closeModal();
+  renderExpoList();
+  toast('创建成功');
+}
 
-二、现场原始记录
-${recordText}
+// 打开展会 → 自动显示顶部AI按钮
+function openExpo(id) {
+  currentExpoId = id;
+  const expo = data.expos.find(e => e.id === id);
+  document.getElementById('headerTitle').textContent = expo.name;
+  document.getElementById('headerExpoName').textContent = `${expo.date} · ${expo.company}`;
+  document.getElementById('backBtn').style.visibility = 'visible';
+  document.getElementById('bottomBar').style.display = 'block';
+  document.getElementById('aiTopBar').classList.add('show');
+  document.querySelector('.fab').style.display = 'none';
+  showPage('pageRecord');
+  renderRecords();
+}
 
-三、合作机会 & 待办事项
-${todo}
-            `.trim();
-            document.getElementById('result').textContent = result;
-            showToast('日报生成完成');
-        }
+// 返回 → 隐藏顶部AI按钮
+function goBack() {
+  currentExpoId = null;
+  document.getElementById('headerTitle').textContent = '展记';
+  document.getElementById('headerExpoName').textContent = '';
+  document.getElementById('backBtn').style.visibility = 'hidden';
+  document.getElementById('bottomBar').style.display = 'none';
+  document.getElementById('aiTopBar').classList.remove('show');
+  document.querySelector('.fab').style.display = 'flex';
+  showPage('pageHome');
+  renderExpoList();
+}
 
-        // 生成总结
-        async function generateSummary() {
-            if(expoData.records.length === 0) return showToast('请先添加记录');
-            showToast('AI生成中...');
-            const plan = expoData.plan;
-            const records = expoData.records;
-            const recordText = records.map(r => `【${r.type}】${r.time}：${r.content}`).join('\n');
-            const summary = await aiSummary(`展会总结：${recordText}`);
-            const todo = 'AI后续计划：1. 对接高意向客户 2. 制定合作推进表 3. 完成展会复盘报告 4. 整理客户档案';
-            const result = `
-【展会总结报告】
-展会：${plan.name || '未设置'}
-时间：${plan.date || '未设置'}
-单位：${plan.company || '未设置'}
+// 记录
+function renderRecords() {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  const el = document.getElementById('recordList');
+  const aiEl = document.getElementById('aiReportContainer');
+  
+  aiEl.innerHTML = '';
+  if (!expo.records || expo.records.length === 0) {
+    el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/></svg><h3>暂无记录</h3></div>`;
+    return;
+  }
+  el.innerHTML = expo.records.map((r, i) => `
+    <div class="record-item">
+      <div class="record-item-info">
+        <div class="record-item-title">${r.type}</div>
+        <div class="record-item-meta">${r.time}</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:4px;line-height:1.4">${r.text}</div>
+      </div>
+      <button class="record-item-del" onclick="deleteRecord(${i})">✕</button>
+    </div>
+  `).join('');
+}
 
-一、整体AI总结
-${summary}
+function saveRecord(type, text) {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  expo.records.push({
+    time: new Date().toLocaleString(),
+    type, text
+  });
+  saveData();
+  renderRecords();
+}
 
-二、完整参展记录
-${recordText}
+// 拍照
+function takePhoto() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'camera';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingPhoto = file;
+    document.getElementById('previewImg').src = URL.createObjectURL(file);
+    document.getElementById('photoPreview').classList.add('show');
+  };
+  input.click();
+}
 
-三、合作机会筛选 & 执行清单
-${todo}
-            `.trim();
-            document.getElementById('result').textContent = result;
-            showToast('总结报告生成完成');
-        }
+function cancelPhoto() {
+  pendingPhoto = null;
+  document.getElementById('photoPreview').classList.remove('show');
+}
 
-        // 复制结果
-        function copyResult() {
-            const text = document.getElementById('result').textContent;
-            if(!text) return showToast('无内容可复制');
-            navigator.clipboard.writeText(text);
-            showToast('已复制到剪贴板');
-        }
+function savePhoto() {
+  saveRecord('拍照', '已拍摄照片');
+  pendingPhoto = null;
+  document.getElementById('photoPreview').classList.remove('show');
+  toast('已保存');
+}
 
-        // 提示框
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
-        }
+// 录音
+function startRecord() {
+  try {
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Rec) {
+      toast('浏览器不支持录音功能');
+      return;
+    }
+  
+    recognition = new Rec();
+    recognition.lang = 'zh-CN';
+    let text = '';
+  
+    recognition.onresult = function(e) {
+      text = e.results[0][0].transcript;
+    };
+  
+    recognition.onend = function() {
+      if (text) {
+        saveRecord('录音', text);
+      }
+      toast('录音完成');
+    };
+  
+    recognition.start();
+    toast('正在录音…6秒后自动停止');
+    setTimeout(() => {
+      try { recognition.stop(); } catch (e) {}
+    }, 6000);
+  } catch (e) {
+    toast('录音启动失败');
+  }
+}
 
-        // 初始化
-        window.onload = () => {
-            if(expoData.plan) {
-                document.getElementById('expoName').value = expoData.plan.name || '';
-                document.getElementById('expoDate').value = expoData.plan.date || '';
-                document.getElementById('expoCompany').value = expoData.plan.company || '';
-            }
-            renderRecords();
-        };
+// 录像
+function takeVideo() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'video/*';
+  input.capture = 'camcorder';
+  input.onchange = () => {
+    saveRecord('录像', '已录制视频');
+    toast('已保存');
+  };
+  input.click();
+}
 
-        // PWA注册
-        if('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
-            });
-        }
-    </script>
+// 文字记录
+function showNoteModal() {
+  document.getElementById('noteModal').classList.add('show');
+}
+function saveNote() {
+  const t = document.getElementById('noteContent').value.trim();
+  if (!t) return toast('请输入内容');
+  saveRecord('文字', t);
+  document.getElementById('noteContent').value = '';
+  closeModal();
+  toast('已保存');
+}
 
-    <!-- PWA Service Worker 离线支持 -->
-    <script>
-        const sw = `
-        const CACHE = 'zhanji-v1';
-        self.addEventListener('install', e => {
-          e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])));
-        });
-        self.addEventListener('fetch', e => {
-          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-        });
-        `;
-        const blob = new Blob([sw], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('link');
-        link.rel = 'serviceworker';
-        link.href = url;
-        document.head.appendChild(link);
-    </script>
+// 删除记录
+function deleteRecord(index) {
+  if (!confirm('确定删除？')) return;
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  expo.records.splice(index, 1);
+  saveData();
+  renderRecords();
+  toast('已删除');
+}
+
+// ====================== AI 参展日报 + 展会总结 ======================
+async function generateDailyReport() {
+  toast("正在生成参展日报...");
+  await generateReport('daily');
+}
+async function generateExpoSummary() {
+  toast("正在生成展会总结...");
+  await generateReport('summary');
+}
+
+async function generateReport(type) {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  if (!expo || !expo.records || expo.records.length === 0) {
+    toast('暂无记录可生成报告');
+    return;
+  }
+
+  const title = type === 'daily' ? '🤖 参展日报' : '🤖 展会总结报告';
+
+  const recordLines = expo.records.map(r => `[${r.time}] ${r.type}：${r.text}`).join('\n');
+
+  const prompt = `
+你是专业展会助理，请根据以下参会记录，生成一份正式的【${title}】，严格分为三部分：
+
+【第一部分：内容总结】
+基于所有交流记录、语音、图片，用简洁专业的语言总结整体情况。
+
+【第二部分：核心记录（按时间顺序）】
+${recordLines}
+
+【第三部分：合作机会筛选 + TO DO LIST】
+1. 合作机会：从记录中提炼有价值的合作意向、客户需求、潜在订单
+2. TO DO LIST：输出必须执行的后续工作、跟进事项、联系人、时间节点
+
+要求：条理清晰、专业简洁、可直接用于工作汇报。
+记录如下：
+${expo.records.map(r => `【${r.type}】${r.text}`).join('\n')}
+  `.trim();
+
+  try {
+    const res = await fetch('https://api.aigcfun.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer free' },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2
+      })
+    });
+
+    const json = await res.json();
+    const result = json.choices?.[0]?.message?.content || '生成失败，请重试';
+    
+    document.getElementById('aiReportContainer').innerHTML = `
+      <div class="ai-report-card">
+        <div class="ai-report-title">${title}</div>
+        <div class="ai-report-content">${result.replace(/\n/g, '<br>')}</div>
+      </div>
+    `;
+    toast(`${title}生成完成`);
+  } catch (e) {
+    console.error(e);
+    toast('网络异常，生成失败');
+  }
+}
+// ====================================================================
+
+// 导出
+function goToExport() {
+  const expo = data.expos.find(e => e.id === currentExpoId);
+  let content = `【${expo.name}】\n${expo.date} | ${expo.company}\n\n`;
+  expo.records.forEach(r => {
+    content += `【${r.type}】${r.time}\n${r.text}\n\n`;
+  });
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${expo.name}_记录.txt`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('导出成功');
+}
+
+// 存储
+function saveData() {
+  localStorage.setItem('zhanji_simple', JSON.stringify(data));
+}
+
+// 提示
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// 初始化
+window.onload = renderExpoList;
+</script>
 </body>
 </html>
