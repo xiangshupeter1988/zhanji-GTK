@@ -2,537 +2,1447 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="展记">
-<meta name="theme-color" content="#0f1f3d">
-<title>展记</title>
+<meta name="theme-color" content="#3b82f6">
+<title>展记 - 展会记录助手</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><text x='16' y='24' font-size='22' text-anchor='middle' fill='white'>展</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%233b82f6'/><text x='90' y='125' font-size='110' text-anchor='middle' fill='white'>展</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#1a365d;--accent:#e8a838;--bg:#f2f2f7;--card:#fff;
-  --text:#1c1c1e;--text2:#636366;--text3:#aeaeb2;--danger:#ff3b30;
-  --safe-top:env(safe-area-inset-top,20px);--safe-bottom:env(safe-area-inset-bottom,20px);
-  --header-h:56px;--tab-h:82px;--radius:14px;--radius-lg:20px;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--primary:#3b82f6;--primary-dark:#2563eb;--bg:#0f172a;--bg2:#1e293b;--bg3:#334155;--text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;--danger:#ef4444;--success:#22c55e;--warning:#f59e0b;--radius:12px;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
+#app{height:100%;display:flex;flex-direction:column}
+/* Toast */
+.toast{position:fixed;top:calc(60px + var(--safe-top));left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:10px 24px;border-radius:20px;font-size:14px;z-index:9999;transition:opacity .3s;white-space:nowrap;max-width:80vw;overflow:hidden;text-overflow:ellipsis}
+.toast.hidden{opacity:0;pointer-events:none}
+.toast.error{background:var(--danger)}
+.toast.success{background:var(--success);color:#000}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;padding-top:calc(8px + var(--safe-top));background:var(--bg2);border-bottom:1px solid var(--bg3);min-height:56px;position:relative;z-index:100;flex-shrink:0}
+header h1{font-size:18px;font-weight:700;flex:1;text-align:center}
+.header-left,.header-right{min-width:48px;display:flex;align-items:center}
+.header-right{justify-content:flex-end}
+.hdr-btn{background:none;border:none;color:var(--text);padding:8px;cursor:pointer;border-radius:8px;font-size:14px;display:flex;align-items:center;gap:4px}
+.hdr-btn:active{background:var(--bg3)}
+/* Main */
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-bottom:calc(80px + var(--safe-bottom))}
+/* Bottom Nav */
+nav#bottomNav{display:flex;align-items:center;justify-content:space-around;background:var(--bg2);border-top:1px solid var(--bg3);padding:6px 0;padding-bottom:calc(6px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text3);cursor:pointer;padding:4px 12px;font-size:10px;transition:color .2s;-webkit-user-select:none;user-select:none}
+.nav-item.active{color:var(--primary)}
+.nav-item.record-btn{color:var(--primary);position:relative;top:-8px;background:var(--bg2);border-radius:50%;padding:10px;border:3px solid var(--bg)}
+/* Cards */
+.card{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--bg3);cursor:pointer;transition:transform .15s}
+.card:active{transform:scale(0.98)}
+.card-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--text2)}
+.card-meta{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:4px;background:var(--bg3);padding:3px 10px;border-radius:20px;font-size:11px;color:var(--text2)}
+.badge svg{width:12px;height:12px}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:var(--radius);border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;-webkit-user-select:none;user-select:none;width:100%}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:active{background:var(--primary-dark)}
+.btn-secondary{background:var(--bg3);color:var(--text)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-outline{background:transparent;border:2px solid var(--bg3);color:var(--text)}
+.btn-sm{padding:8px 16px;font-size:13px}
+.btn-row{display:flex;gap:8px}
+.btn-row .btn{flex:1}
+/* Form */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.form-input{width:100%;padding:12px;border-radius:var(--radius);border:1px solid var(--bg3);background:var(--bg);color:var(--text);font-size:15px;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--primary)}
+textarea.form-input{min-height:100px;resize:vertical;font-family:inherit}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+/* Media capture */
+.capture-tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);border-radius:var(--radius);padding:4px}
+.capture-tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .2s}
+.capture-tab.active{background:var(--primary);color:#fff}
+.capture-area{min-height:300px;border-radius:var(--radius);overflow:hidden;position:relative;background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-direction:column}
+.capture-area video,.capture-area img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius)}
+.capture-controls{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:16px;padding:12px}
+.cap-btn{width:64px;height:64px;border-radius:50%;border:4px solid var(--text);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.cap-btn.recording{border-color:var(--danger);animation:pulse 1.5s infinite}
+.cap-btn:active{transform:scale(0.9)}
+.cap-btn-inner{width:24px;height:24px;border-radius:50%;background:var(--danger);transition:all .2s}
+.cap-btn.recording .cap-btn-inner{border-radius:4px;width:20px;height:20px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+/* Recording timer */
+.rec-timer{font-size:24px;font-weight:700;color:var(--danger);font-variant-numeric:tabular-nums}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;transition:opacity .2s}
+.modal-overlay.hidden{opacity:0;pointer-events:none}
+.modal{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-radius:20px 20px 0 0;padding:24px;padding-bottom:calc(24px + var(--safe-bottom));z-index:201;max-height:85vh;overflow-y:auto;transition:transform .3s;transform:translateY(0)}
+.modal.hidden{transform:translateY(100%);pointer-events:none}
+.modal-handle{width:40px;height:4px;background:var(--bg3);border-radius:2px;margin:0 auto 16px}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+/* Record items */
+.record-item{display:flex;gap:12px;padding:12px;background:var(--bg2);border-radius:var(--radius);margin-bottom:8px;border:1px solid var(--bg3);align-items:flex-start}
+.record-item .ri-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ri-icon.photo{background:rgba(59,130,246,.2);color:var(--primary)}
+.ri-icon.audio{background:rgba(239,68,68,.2);color:var(--danger)}
+.ri-icon.video{background:rgba(34,197,94,.2);color:var(--success)}
+.ri-icon.note{background:rgba(245,158,11,.2);color:var(--warning)}
+.record-item .ri-body{flex:1;min-width:0}
+.ri-body .ri-title{font-size:14px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-body .ri-desc{font-size:12px;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ri-body .ri-time{font-size:11px;color:var(--text3);margin-top:4px}
+.ri-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0}
+/* Empty state */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:var(--text3)}
+.empty svg{width:64px;height:64px;margin-bottom:16px;opacity:.5}
+.empty p{font-size:14px;margin-bottom:16px}
+/* Sections */
+.section-title{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:20px}
+.section-title:first-child{margin-top:0}
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat-box{background:var(--bg2);border-radius:var(--radius);padding:12px 8px;text-align:center;border:1px solid var(--bg3)}
+.stat-num{font-size:24px;font-weight:700;color:var(--primary)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+/* Export */
+.export-card{background:var(--bg2);border:2px solid var(--bg3);border-radius:var(--radius);padding:20px;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.export-card:active{border-color:var(--primary);transform:scale(0.98)}
+.export-card h4{font-size:16px;font-weight:700;margin-bottom:4px}
+.export-card p{font-size:13px;color:var(--text2)}
+/* Loading spinner */
+.spinner{width:32px;height:32px;border:3px solid var(--bg3);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;color:var(--text)}
+.loading-overlay p{font-size:14px}
+/* Misc */
+.hidden{display:none!important}
+.text-primary{color:var(--primary)}
+.text-danger{color:var(--danger)}
+.text-muted{color:var(--text2)}
+.text-sm{font-size:13px}
+.mt-2{margin-top:8px}
+.mt-4{margin-top:16px}
+.mb-2{margin-bottom:8px}
+.mb-4{margin-bottom:16px}
+.gap-2{gap:8px}
+.flex{display:flex}
+.flex-col{flex-direction:column}
+.items-center{align-items:center}
+.justify-between{justify-content:space-between}
+.w-full{width:100%}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* Media preview in detail */
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.media-grid img,.media-grid video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:pointer}
+/* AI chat bubble */
+.ai-bubble{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.15));border:1px solid rgba(59,130,246,.3);border-radius:var(--radius);padding:14px;margin-top:12px;font-size:13px;line-height:1.6}
+.ai-bubble .ai-label{font-size:11px;color:var(--primary);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+/* Scrollbar */
+main::-webkit-scrollbar{width:4px}
+main::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+/* Tabs for detail page */
+.detail-tabs{display:flex;gap:0;border-bottom:2px solid var(--bg3);margin-bottom:16px}
+.detail-tab{padding:10px 16px;font-size:14px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.detail-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+/* Switch */
+.switch{width:44px;height:24px;background:var(--bg3);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.switch.on{background:var(--primary)}
+.switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s}
+.switch.on::after{transform:translateX(20px)}
+/* Accessibility for settings items */
+.setting-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--bg3)}
+.setting-item:last-child{border-bottom:none}
+.setting-label{font-size:15px}
+.setting-desc{font-size:12px;color:var(--text3);margin-top:2px}
+/* Date selector */
+.date-nav{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:var(--radius);padding:8px 16px;margin-bottom:16px}
+.date-nav button{background:none;border:none;color:var(--text);padding:8px;cursor:pointer;font-size:18px}
+.date-nav span{font-size:15px;font-weight:600}
+/* Audio waveform placeholder */
+.waveform{height:60px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:2px;padding:0 16px;margin:12px 0}
+.waveform .bar{width:3px;background:var(--primary);border-radius:2px;animation:wave 1s ease-in-out infinite}
+@keyframes wave{0%,100%{height:8px}50%{height:40px}}
+/* Image preview lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:400;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lightbox img,.lightbox video{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px}
+.lightbox .close-lb{position:absolute;top:calc(16px + var(--safe-top));right:16px;color:#fff;background:rgba(255,255,255,.2);border:none;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* Responsive */
+@media(min-width:768px){
+  main{max-width:640px;margin:0 auto}
+  .stats-row{grid-template-columns:repeat(4,1fr)}
+  .media-grid{grid-template-columns:repeat(4,1fr)}
 }
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
-button{font:inherit;border:none;background:none;cursor:pointer;outline:none}
-input,textarea{font:inherit;border:none;background:transparent;outline:none}
-
-.app-header{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  padding-top:var(--safe-top);
-  background:rgba(15,31,61,.88);backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.header-inner{height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
-.header-title{color:#fff;font-size:17px;font-weight:600;flex:1;text-align:center}
-.header-btn{color:var(--accent);font-size:15px;padding:8px;min-width:44px}
-.header-expo-name{font-size:11px;color:var(--accent);text-align:center;padding-bottom:6px}
-
-.ai-top-bar{
-  position:fixed;top:calc(var(--safe-top) + var(--header-h));left:0;right:0;z-index:90;
-  background:rgba(15,31,61,.88);backdrop-filter:blur(20px);
-  padding:10px 16px;display:flex;gap:10px;
-  border-bottom:1px solid rgba(255,255,250,.06);display:none;
-}
-.ai-top-bar.show{display:flex}
-.ai-top-btn{
-  flex:1;padding:12px 14px;border-radius:12px;
-  font-size:15px;font-weight:500;
-  background:var(--accent);color:#0f1f3d;
-}
-.ai-top-btn.secondary{background:rgba(255,255,255,.12);color:#fff;}
-
-.tab-bar{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;
-  padding-bottom:var(--safe-bottom);
-  background:rgba(15,31,61,.92);backdrop-filter:blur(20px);
-  border-top:1px solid rgba(255,255,255,.08);
-}
-.tab-bar-inner{display:flex;height:50px}
-.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.45)}
-.tab-item.active{color:var(--accent)}
-.tab-item svg{width:22px;height:22px}
-.tab-item span{font-size:9px;margin-top:2px}
-
-.page{
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  padding-top:calc(var(--safe-top) + var(--header-h) + 60px);
-  padding-bottom:calc(var(--tab-h) + var(--safe-bottom) + 10px);
-  overflow-y:auto;opacity:0;pointer-events:none;transition:all .3s;
-}
-.page.active{opacity:1;pointer-events:auto}
-.page-pad{padding:16px}
-
-.expo-card{
-  background:var(--card);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.06);position:relative
-}
-.expo-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
-.expo-card-name{font-size:17px;font-weight:600;margin-bottom:4px;padding-left:8px}
-.expo-card-info{font-size:13px;color:var(--text2);padding-left:8px;margin-bottom:12px}
-.selected-indicator{position:absolute;top:14px;right:14px;background:var(--accent);color:#0f1f3d;font-size:10px;padding:3px 8px;border-radius:8px}
-
-.empty-state{display:flex;flex-direction:column;align-items:center;padding:60px 20px;text-align:center}
-.empty-state svg{width:80px;height:80;color:var(--text3);margin-bottom:16px}
-.empty-state h3{font-size:18px;color:var(--text2)}
-
-.fab{
-  position:fixed;right:20px;bottom:calc(var(--tab-h) + var(--safe-bottom) + 16px);
-  width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f4c562);
-  color:#0f1f3d;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(232,168,56,.35)
-}
-
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;z-index:200}
-.modal-overlay.show{opacity:1;pointer-events:auto}
-.modal-sheet{width:100%;max-width:500px;background:var(--card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding-bottom:calc(var(--safe-bottom) + 10px);transform:translateY(120%);transition:transform .4s ease}
-.modal-overlay.show .modal-sheet{transform:translateY(0)}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(0,0,0,.06)}
-.modal-close{color:#007aff;font-size:15px;font-weight:500}
-
-.form-group{margin-bottom:18px}
-.form-input{width:100%;padding:14px 16px;background:var(--bg);border-radius:12px;font-size:16px}
-.form-btn{width:100%;padding:16px;border-radius:14px;background:var(--primary);color:#fff;font-size:16px;font-weight:600}
-.form-btn.danger{background:var(--danger)}
-
-.record-item{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.record-item-info{flex:1}
-.record-item-title{font-size:15px;font-weight:500}
-.record-item-meta{font-size:12px;color:var(--text3);margin-top:2px}
-.record-item-del{color:var(--danger)}
-
-.preview-overlay{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:200}
-.preview-overlay.show{opacity:1;pointer-events:auto}
-.preview-actions{display:flex;gap:16px;margin-top:24px}
-.preview-actions button{padding:12px 32px;border-radius:14px}
-.preview-actions .confirm{background:var(--accent);color:#0f1f3d}
-.preview-actions .cancel{background:rgba(255,255,255,.15);color:#fff}
-
-.ai-report-card {
-  background:linear-gradient(135deg, #fffbeb, #fff) !important;
-  border:2px solid #f59e0b !important;
-  border-radius:var(--radius-lg) !important;
-  padding:20px !important;
-  margin:10px 0 20px 0 !important;
-  line-height:1.7 !important;
-  display:block !important;
-}
-.ai-report-title {font-size:17px; font-weight:700;color:#b45309;margin-bottom:12px;}
-.ai-report-content {font-size:15px;color:var(--text2);white-space:pre-wrap;}
-
-.toast{position:fixed;top:calc(var(--safe-top)+var(--header-h)+80px);left:50%;transform:translate(-50%,-20px);background:var(--primary);color:#fff;padding:10px 20px;border-radius:12px;opacity:0;transition:.3s;z-index:300}
-.toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-
-<header class="app-header">
-  <div class="header-inner">
-    <button class="header-btn" id="backBtn" style="visibility:hidden" onclick="goBack()">←</button>
-    <div style="flex:1">
-      <div class="header-title" id="headerTitle">展记</div>
-      <div class="header-expo-name" id="headerExpoName"></div>
-    </div>
-    <button class="header-btn" style="visibility:hidden"></button>
-  </div>
-</header>
-
-<div class="ai-top-bar" id="aiTopBar">
-  <button class="ai-top-btn" onclick="generateDailyReport()">📊 参展日报</button>
-  <button class="ai-top-btn secondary" onclick="generateExpoSummary()">📝 展会总结</button>
+<div id="app">
+  <div id="toast" class="toast hidden"></div>
+  <!-- HEADER -->
+  <header id="header">
+    <div class="header-left" id="headerLeft"></div>
+    <h1 id="headerTitle">展记</h1>
+    <div class="header-right" id="headerRight"></div>
+  </header>
+  <!-- MAIN CONTENT -->
+  <main id="main"></main>
+  <!-- BOTTOM NAV -->
+  <nav id="bottomNav">
+    <div class="nav-item active" data-page="home"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg><span>首页</span></div>
+    <div class="nav-item" data-page="exhibitions"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>展会</span></div>
+    <div class="nav-item record-btn" data-page="capture"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg><span>记录</span></div>
+    <div class="nav-item" data-page="records"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg><span>记录</span></div>
+    <div class="nav-item" data-page="settings"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>设置</span></div>
+  </nav>
+  <!-- MODALS -->
+  <div id="modalOverlay" class="modal-overlay hidden"></div>
+  <div id="modal" class="modal hidden"></div>
 </div>
-
-<div class="page active" id="pageHome"><div class="page-pad"><div id="expoList"></div></div></div>
-<div class="page" id="pageRecord"><div class="page-pad">
-  <div id="aiReportContainer"></div>
-  <div id="recordList"></div>
-</div></div>
-
-<button class="fab" onclick="showAddExpoModal()">+</button>
-
-<div class="modal-overlay" id="addModal">
-  <div class="modal-sheet">
-    <div class="modal-header"><h3>新建展会</h3><button class="modal-close" onclick="closeModal()">关闭</button></div>
-    <div style="padding:20px">
-      <div class="form-group"><input class="form-input" id="expoName" placeholder="展会名称"></div>
-      <div class="form-group"><input class="form-input" id="expoDate" placeholder="展会日期"></div>
-      <div class="form-group"><input class="form-input" id="expoCompany" placeholder="参展企业"></div>
-      <button class="form-btn" onclick="createExpo()">保存</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="noteModal">
-  <div class="modal-sheet">
-    <div class="modal-header"><h3>添加记录</h3><button class="modal-close" onclick="closeModal()">关闭</button></div>
-    <div style="padding:20px">
-      <textarea class="form-input" id="noteContent" rows="5" placeholder="输入交流内容、产品信息、客户需求"></textarea>
-      <button class="form-btn" onclick="saveNote()">保存</button>
-    </div>
-  </div>
-</div>
-
-<div class="preview-overlay" id="photoPreview">
-  <img id="previewImg" style="max-width:100%;max-height:80vh">
-  <div class="preview-actions">
-    <button class="cancel" onclick="cancelPhoto()">重拍</button>
-    <button class="confirm" onclick="savePhoto()">保存</button>
-  </div>
-</div>
-
-<div class="tab-bar" id="bottomBar" style="display:none">
-  <div class="tab-bar-inner">
-    <button class="tab-item" onclick="takePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg><span>拍照</span></button>
-    <button class="tab-item" onclick="startRecord()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/></svg><span>录音</span></button>
-    <button class="tab-item" onclick="takeVideo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>录像</span></button>
-    <button class="tab-item" onclick="showNoteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>记录</span></button>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
 <script>
-// 数据结构彻底修复：每个展会独立，绝不串数据
-let data = JSON.parse(localStorage.getItem('zhanji_final')) || { expos: [] };
-let currentExpoId = null;
-let pendingPhoto = null;
+// ====== CONFIG ======
+const SUPABASE_URL = 'https://pzijdwsgflqjrbrxoslf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Hp2duy7Mj3C8yhihN1btfQ_dqNfM0sk';
+const DB_NAME = 'ZhanJiDB';
+const DB_VERSION = 1;
+
+// ====== GLOBALS ======
+let db = null;
+let sbClient = null;
+let currentExhibitionId = null;
+let currentPage = 'home';
+let mediaStream = null;
 let mediaRecorder = null;
+let audioChunks = [];
+let recordingTimer = null;
+let recordingSeconds = 0;
 
-// 页面切换
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+// ====== INIT ======
+async function init() {
+  try { sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) { console.warn('Supabase init failed:', e); }
+  await initDB();
+  setupNav();
+  loadDeviceId();
+  navigate('home');
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
-// 渲染展会列表
-function renderExpoList() {
-  const el = document.getElementById('expoList');
-  if (data.expos.length === 0) {
-    el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/></svg><h3>暂无展会</h3></div>`;
-    return;
-  }
-  el.innerHTML = data.expos.map(e => `
-    <div class="expo-card" onclick="openExpo('${e.id}')">
-      ${e.id === currentExpoId ? '<div class="selected-indicator">当前</div>' : ''}
-      <div class="expo-card-name">${e.name}</div>
-      <div class="expo-card-info">${e.date} | ${e.company}</div>
-    </div>
-  `).join('');
-}
-
-// 新建展会
-function showAddExpoModal() { document.getElementById('addModal').classList.add('show'); }
-function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show')); }
-
-function createExpo() {
-  const name = document.getElementById('expoName').value.trim();
-  const date = document.getElementById('expoDate').value.trim();
-  const company = document.getElementById('expoCompany').value.trim();
-  if (!name || !date || !company) return toast('请填写完整');
-  
-  // 每个展会自带独立 records 数组
-  const expo = { id: Date.now().toString(), name, date, company, records: [] };
-  data.expos.push(expo);
-  saveData();
-  closeModal();
-  renderExpoList();
-  toast('创建成功');
-}
-
-// 打开展会（独立加载当前展会数据）
-function openExpo(id) {
-  currentExpoId = id;
-  const expo = data.expos.find(e => e.id === id);
-  document.getElementById('headerTitle').textContent = expo.name;
-  document.getElementById('headerExpoName').textContent = `${expo.date} · ${expo.company}`;
-  document.getElementById('backBtn').style.visibility = 'visible';
-  document.getElementById('bottomBar').style.display = 'block';
-  document.getElementById('aiTopBar').classList.add('show');
-  document.querySelector('.fab').style.display = 'none';
-  
-  // 清空上一个展会的报告
-  document.getElementById('aiReportContainer').innerHTML = '';
-  
-  showPage('pageRecord');
-  renderRecords(); // 只加载当前展会记录
-}
-
-// 返回
-function goBack() {
-  currentExpoId = null;
-  document.getElementById('headerTitle').textContent = '展记';
-  document.getElementById('headerExpoName').textContent = '';
-  document.getElementById('backBtn').style.visibility = 'hidden';
-  document.getElementById('bottomBar').style.display = 'none';
-  document.getElementById('aiTopBar').classList.remove('show');
-  document.querySelector('.fab').style.display = 'flex';
-  showPage('pageHome');
-  renderExpoList();
-}
-
-// 渲染【当前展会】的独立记录
-function renderRecords() {
-  if (!currentExpoId) return;
-  const expo = data.expos.find(e => e.id === currentExpoId);
-  const el = document.getElementById('recordList');
-  
-  if (!expo.records || expo.records.length === 0) {
-    el.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/></svg><h3>暂无记录</h3></div>`;
-    return;
-  }
-  el.innerHTML = expo.records.map((r, i) => `
-    <div class="record-item">
-      <div class="record-item-info">
-        <div class="record-item-title">${r.type}</div>
-        <div class="record-item-meta">${r.time}</div>
-        <div style="font-size:14px;color:var(--text2);margin-top:4px;line-height:1.4">${r.text}</div>
-      </div>
-      <button class="record-item-del" onclick="deleteRecord(${i})">✕</button>
-    </div>
-  `).join('');
-}
-
-// 保存到【当前展会】
-function saveRecord(type, text) {
-  if (!currentExpoId) return;
-  const expo = data.expos.find(e => e.id === currentExpoId);
-  expo.records.push({
-    time: new Date().toLocaleString(),
-    type, text
-  });
-  saveData();
-  renderRecords();
-}
-
-// ====================== 拍照：不卡死、稳定版 ======================
-function takePhoto() {
-  try {
-    // 立即释放内存，防止卡死
-    if (pendingPhoto) URL.revokeObjectURL(pendingPhoto);
-    pendingPhoto = null;
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    
-    // 只在用户选择后执行，防止卡死
-    input.onchange = function(e) {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      
-      // 轻量预览，不占内存
-      pendingPhoto = file;
-      document.getElementById('previewImg').src = URL.createObjectURL(file);
-      document.getElementById('photoPreview').classList.add('show');
-    };
-    
-    input.click();
-  } catch (err) {
-    toast('拍照启动失败');
+function loadDeviceId() {
+  if (!localStorage.getItem('zj_device_id')) {
+    localStorage.setItem('zj_device_id', 'dev_' + Math.random().toString(36).substr(2, 12));
   }
 }
+function getDeviceId() { return localStorage.getItem('zj_device_id'); }
 
-function cancelPhoto() {
-  pendingPhoto = null;
-  document.getElementById('photoPreview').classList.remove('show');
-}
-
-function savePhoto() {
-  if (!pendingPhoto) return;
-  saveRecord('拍照', '已拍摄照片');
-  pendingPhoto = null;
-  document.getElementById('photoPreview').classList.remove('show');
-  toast('照片已保存');
-}
-
-// ====================== 录音：极简稳定版 ======================
-async function startRecord() {
-  try {
-    // 防止重复录制
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-      return;
-    }
-
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    
-    mediaRecorder.start();
-    toast('正在录音…5秒后自动保存');
-
-    // 自动停止，防止异常
-    setTimeout(() => {
-      if (mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        saveRecord('录音', '已录制音频');
-        stream.getTracks().forEach(t => t.stop());
-        toast('录音已保存');
+// ====== INDEXEDDB ======
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('exhibitions')) {
+        const es = d.createObjectStore('exhibitions', { keyPath: 'id' });
+        es.createIndex('created_at', 'created_at');
       }
-    }, 5000);
-
-  } catch (e) {
-    toast('请允许麦克风权限');
-  }
-}
-
-// ====================== 录像 ======================
-function takeVideo() {
-  try {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'video/*';
-    input.onchange = () => {
-      saveRecord('录像', '已录制视频');
-      toast('视频已保存');
+      if (!d.objectStoreNames.contains('records')) {
+        const rs = d.createObjectStore('records', { keyPath: 'id' });
+        rs.createIndex('exhibition_id', 'exhibition_id');
+        rs.createIndex('created_at', 'created_at');
+        rs.createIndex('type', 'type');
+      }
     };
-    input.click();
-  } catch (e) {
-    toast('录像启动失败');
+    req.onsuccess = e => { db = e.target.result; resolve(); };
+    req.onerror = e => reject(e);
+  });
+}
+
+function dbPut(store, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).put(data);
+    tx.oncomplete = () => resolve();
+    tx.onerror = e => reject(e);
+  });
+}
+
+function dbGet(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = e => reject(e);
+  });
+}
+
+function dbGetAll(store, indexName, indexValue) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    let req;
+    if (indexName && indexValue !== undefined) {
+      const idx = tx.objectStore(store).index(indexName);
+      req = idx.getAll(indexValue);
+    } else {
+      req = tx.objectStore(store).getAll();
+    }
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = e => reject(e);
+  });
+}
+
+function dbDelete(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = e => reject(e);
+  });
+}
+
+// ====== NAVIGATION ======
+function setupNav() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const page = item.dataset.page;
+      navigate(page);
+    });
+  });
+}
+
+function navigate(page, params = {}) {
+  stopAllMedia();
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  const main = document.getElementById('main');
+  main.scrollTop = 0;
+  switch (page) {
+    case 'home': renderHome(); break;
+    case 'exhibitions': renderExhibitions(params); break;
+    case 'capture': renderCapture(params); break;
+    case 'records': renderRecords(params); break;
+    case 'settings': renderSettings(); break;
+    case 'exhibition-detail': renderExhibitionDetail(params); break;
+    case 'export': renderExport(params); break;
+    default: renderHome();
   }
 }
 
-// ====================== 文字记录 ======================
-function showNoteModal() {
-  document.getElementById('noteModal').classList.add('show');
-}
-function saveNote() {
-  const t = document.getElementById('noteContent').value.trim();
-  if (!t) return toast('请输入内容');
-  saveRecord('文字', t);
-  document.getElementById('noteContent').value = '';
-  closeModal();
-  toast('已保存');
+function setHeader(title, leftHtml = '', rightHtml = '') {
+  document.getElementById('headerTitle').textContent = title;
+  document.getElementById('headerLeft').innerHTML = leftHtml;
+  document.getElementById('headerRight').innerHTML = rightHtml;
 }
 
-// ====================== 删除当前展会的记录 ======================
-function deleteRecord(index) {
-  if (!confirm('确定删除？')) return;
-  const expo = data.expos.find(e => e.id === currentExpoId);
-  expo.records.splice(index, 1);
-  saveData();
-  renderRecords();
-  toast('已删除');
+function backBtn(page, params) {
+  return `<button class="hdr-btn" onclick="navigate('${page}'${params ? ',' + JSON.stringify(params).replace(/"/g, '&quot;') : ''})"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>`;
 }
 
-// ====================== ✅ 本地智能AI报告（100%可用、国内稳定） ======================
-function generateDailyReport() {
-  const expo = data.expos.find(e => e.id === currentExpoId);
-  if (!expo || !expo.records.length) return toast("暂无记录");
-
-  const texts = expo.records.map(i => i.text).filter(t => t.length > 4);
-  const summary = extractKeywords(texts);
-  const customers = countCustomers(texts);
-  const products = extractProducts(texts);
-
-  const report = `
-【一、展会概况】
-共记录 ${expo.records.length} 条信息，沟通顺畅，信息收集完整。
-
-【二、核心内容总结】
-${summary.slice(0, 6).map((s, i) => `• ${s}`).join('\n')}
-
-【三、意向客户与需求】
-• 意向客户约 ${customers} 位
-• 重点关注产品：${products.join('、') || '未提及'}
-
-【四、后续跟进计划】
-• 整理客户资料，建立档案
-• 对重点意向客户一对一发送资料
-• 安排专人持续跟进
-• 制定报价与合作方案
-  `;
-
-  document.getElementById("aiReportContainer").innerHTML = `
-  <div class="ai-report-card">
-    <div class="ai-report-title">🤖 AI 参展日报</div>
-    <div class="ai-report-content">${report.replace(/\n/g, '<br>')}</div>
-  </div>`;
-  toast("日报生成成功");
-}
-
-function generateExpoSummary() {
-  const expo = data.expos.find(e => e.id === currentExpoId);
-  if (!expo || !expo.records.length) return toast("暂无记录");
-
-  const total = expo.records.length;
-  const texts = expo.records.map(i => i.text).join(' ');
-  const hasIntent = texts.includes('意向') || texts.includes('需要') || texts.includes('联系') || texts.includes('报价');
-
-  const report = `
-【一、展会整体总结】
-本次展会共收集 ${total} 条有效记录，覆盖客户沟通、产品介绍、需求对接等内容。
-
-【二、成果亮点】
-• 完成现场客户沟通与信息收集
-• 传递产品价值与企业优势
-• ${hasIntent ? '收获有效意向客户' : '完成品牌展示与市场调研'}
-
-【三、核心价值】
-通过现场记录，实现客户信息不丢失、沟通要点不漏记，为后续业务转化提供坚实基础。
-
-【四、下一步行动】
-1. 整理全部客户信息并分类
-2. 优先跟进高意向客户
-3. 完善产品资料与方案
-4. 制定跟踪时间表，确保高效转化
-  `;
-
-  document.getElementById("aiReportContainer").innerHTML = `
-  <div class="ai-report-card">
-    <div class="ai-report-title">🤖 AI 展会总结</div>
-    <div class="ai-report-content">${report.replace(/\n/g, '<br>')}</div>
-  </div>`;
-  toast("总结生成成功");
-}
-
-// 智能提取关键词（本地AI核心）
-function extractKeywords(texts) {
-  const all = texts.join(' ');
-  const words = [];
-  const map = {};
-  const stop = ['的','了','在','和','是','有','我','你','您','我们','可以','这个','那个'];
-  all.split(/\s+|，|。|、|：| /).forEach(w => {
-    if (w.length > 1 && !stop.includes(w)) {
-      map[w] = (map[w] || 0) + 1;
-    }
-  });
-  return Object.entries(map).sort((a,b)=>b[1]-a[1]).map(i=>i[0]);
-}
-
-function countCustomers(texts) {
-  let n = 0;
-  texts.forEach(t => {
-    if (/客户|老板|经理|负责人|需求|意向|联系/.test(t)) n++;
-  });
-  return Math.max(1, Math.min(n, 20));
-}
-
-function extractProducts(texts) {
-  const set = new Set();
-  texts.forEach(t => {
-    const match = t.match(/产品|设备|机器|服务|方案|配件|系统|平台/g);
-    if (match) set.add(match[0]);
-  });
-  return [...set];
-}
-// ====================================================================
-
-// ====================== 存储 ======================
-function saveData() {
-  localStorage.setItem('zhanji_final', JSON.stringify(data));
-}
-
-function toast(msg) {
+// ====== TOAST ======
+function showToast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  t.className = 'toast ' + type;
+  setTimeout(() => t.classList.add('hidden'), 2500);
 }
 
-window.onload = renderExpoList;
+// ====== MODAL ======
+function showModal(html) {
+  document.getElementById('modal').innerHTML = '<div class="modal-handle"></div>' + html;
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  document.getElementById('modalOverlay').onclick = closeModal;
+}
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('modalOverlay').classList.add('hidden');
+}
+
+// ====== LOADING ======
+function showLoading(msg = '处理中...') {
+  const el = document.createElement('div');
+  el.className = 'loading-overlay';
+  el.id = 'loadingOverlay';
+  el.innerHTML = `<div class="spinner"></div><p>${msg}</p>`;
+  document.body.appendChild(el);
+}
+function hideLoading() {
+  const el = document.getElementById('loadingOverlay');
+  if (el) el.remove();
+}
+
+// ====== LIGHTBOX ======
+function showLightbox(src, isVideo = false) {
+  const el = document.createElement('div');
+  el.className = 'lightbox';
+  el.innerHTML = isVideo
+    ? `<video src="${src}" controls autoplay style="max-width:95vw;max-height:90vh"></video><button class="close-lb" onclick="this.parentElement.remove()">&times;</button>`
+    : `<img src="${src}"><button class="close-lb" onclick="this.parentElement.remove()">&times;</button>`;
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
+  document.body.appendChild(el);
+}
+
+// ====== UTILITY ======
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 8); }
+function formatDate(d) { const dt = new Date(d); return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0'); }
+function formatTime(d) { const dt = new Date(d); return String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0'); }
+function formatDateTime(d) { return formatDate(d) + ' ' + formatTime(d); }
+function formatDuration(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function stopAllMedia() {
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
+}
+
+// ====== AI ======
+function getAIConfig() {
+  return {
+    url: localStorage.getItem('zj_ai_url') || 'https://api.siliconflow.cn/v1/chat/completions',
+    key: localStorage.getItem('zj_ai_key') || '',
+    model: localStorage.getItem('zj_ai_model') || 'Qwen/Qwen2.5-7B-Instruct'
+  };
+}
+
+async function callAI(prompt, systemPrompt = '你是展会记录助手"展记"的AI分析模块。请用简洁专业的中文回答。') {
+  const cfg = getAIConfig();
+  if (!cfg.key) throw new Error('请先在设置中配置AI API Key');
+  const resp = await fetch(cfg.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+    body: JSON.stringify({
+      model: cfg.model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 2000,
+      temperature: 0.7
+    })
+  });
+  if (!resp.ok) throw new Error('AI请求失败: ' + resp.status);
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '无返回内容';
+}
+
+// ====== SPEECH TO TEXT (Web Speech API) ======
+function startSpeechRecognition(callback) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('浏览器不支持语音识别', 'error'); return null; }
+  const recognition = new SR();
+  recognition.lang = 'zh-CN';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onresult = e => {
+    let text = '';
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    callback(text, e.results[e.results.length - 1].isFinal);
+  };
+  recognition.onerror = e => { if (e.error !== 'no-speech') showToast('语音识别错误: ' + e.error, 'error'); };
+  recognition.start();
+  return recognition;
+}
+
+// ====== PAGE: HOME ======
+async function renderHome() {
+  setHeader('展记');
+  const exhibitions = await dbGetAll('exhibitions');
+  exhibitions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const active = exhibitions.filter(e => new Date(e.end_date) >= new Date(new Date().toDateString()));
+  const past = exhibitions.filter(e => new Date(e.end_date) < new Date(new Date().toDateString()));
+  let allRecords = await dbGetAll('records');
+
+  const html = `
+    <div style="text-align:center;padding:20px 0 12px">
+      <div style="font-size:48px;margin-bottom:4px">📋</div>
+      <h2 style="font-size:22px;font-weight:800;margin-bottom:4px">展记</h2>
+      <p class="text-muted text-sm">专业展会记录与管理助手</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num">${exhibitions.length}</div><div class="stat-label">展会</div></div>
+      <div class="stat-box"><div class="stat-num">${allRecords.filter(r=>r.type==='photo').length}</div><div class="stat-label">照片</div></div>
+      <div class="stat-box"><div class="stat-num">${allRecords.filter(r=>r.type==='audio').length}</div><div class="stat-label">录音</div></div>
+      <div class="stat-box"><div class="stat-num">${allRecords.filter(r=>r.type==='note').length}</div><div class="stat-label">记录</div></div>
+    </div>
+    <button class="btn btn-primary mb-4" onclick="navigate('exhibitions', {action:'new'})">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      新建展会
+    </button>
+    ${active.length ? `<div class="section-title">进行中 / 即将开始</div>${active.map(e => exhibitionCard(e, allRecords)).join('')}` : ''}
+    ${past.length ? `<div class="section-title">已结束</div>${past.map(e => exhibitionCard(e, allRecords)).join('')}` : ''}
+    ${!exhibitions.length ? `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><p>还没有展会，点击上方按钮创建</p></div>` : ''}
+  `;
+  document.getElementById('main').innerHTML = html;
+}
+
+function exhibitionCard(ex, allRecords) {
+  const recs = allRecords.filter(r => r.exhibition_id === ex.id);
+  const photos = recs.filter(r => r.type === 'photo').length;
+  const audios = recs.filter(r => r.type === 'audio').length;
+  const videos = recs.filter(r => r.type === 'video').length;
+  const notes = recs.filter(r => r.type === 'note').length;
+  const isActive = new Date(ex.end_date) >= new Date(new Date().toDateString());
+  return `<div class="card" onclick="navigate('exhibition-detail',{id:'${ex.id}'})">
+    <div class="flex justify-between items-center">
+      <div class="card-title">${escHtml(ex.name)}</div>
+      <span class="badge" style="background:${isActive ? 'rgba(34,197,94,.2);color:#22c55e' : 'rgba(100,116,139,.2);color:#94a3b8'}">${isActive ? '进行中' : '已结束'}</span>
+    </div>
+    <div class="card-sub">${escHtml(ex.location || '未设置地点')}</div>
+    <div class="card-sub">${formatDate(ex.start_date)} ~ ${formatDate(ex.end_date)}</div>
+    <div class="card-meta">
+      ${photos ? `<span class="badge">📷 ${photos}</span>` : ''}
+      ${audios ? `<span class="badge">🎙 ${audios}</span>` : ''}
+      ${videos ? `<span class="badge">🎬 ${videos}</span>` : ''}
+      ${notes ? `<span class="badge">📝 ${notes}</span>` : ''}
+      ${!recs.length ? '<span class="badge">暂无记录</span>' : ''}
+    </div>
+  </div>`;
+}
+
+// ====== PAGE: EXHIBITIONS (List + New) ======
+async function renderExhibitions(params = {}) {
+  if (params && params.action === 'new') return renderNewExhibition();
+  setHeader('展会管理', '', '<button class="hdr-btn" onclick="renderNewExhibition()">+ 新建</button>');
+  const exhibitions = await dbGetAll('exhibitions');
+  exhibitions.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+  if (!exhibitions.length) {
+    document.getElementById('main').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><p>暂无展会</p><button class="btn btn-primary btn-sm" onclick="renderNewExhibition()">创建展会</button></div>`;
+    return;
+  }
+  const allRecords = await dbGetAll('records');
+  document.getElementById('main').innerHTML = exhibitions.map(e => exhibitionCard(e, allRecords)).join('');
+}
+
+function renderNewExhibition(existing = null) {
+  setHeader(existing ? '编辑展会' : '新建展会', backBtn('exhibitions'));
+  const ex = existing || { name: '', location: '', start_date: formatDate(new Date()), end_date: formatDate(new Date(Date.now() + 3*86400000)), description: '' };
+  document.getElementById('main').innerHTML = `
+    <div class="form-group"><label class="form-label">展会名称 *</label><input class="form-input" id="exName" value="${escHtml(ex.name)}" placeholder="例：2026中国国际进口博览会"></div>
+    <div class="form-group"><label class="form-label">展会地点</label><input class="form-input" id="exLocation" value="${escHtml(ex.location)}" placeholder="例：上海国家会展中心"></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">开始日期</label><input class="form-input" id="exStart" type="date" value="${ex.start_date}"></div>
+      <div class="form-group"><label class="form-label">结束日期</label><input class="form-input" id="exEnd" type="date" value="${ex.end_date}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">展会描述/计划</label><textarea class="form-input" id="exDesc" placeholder="展会简介、参展目标、重点关注方向...">${escHtml(ex.description)}</textarea></div>
+    <button class="btn btn-primary" onclick="saveExhibition('${existing ? existing.id : ''}')">${existing ? '保存修改' : '创建展会'}</button>
+    ${existing ? `<button class="btn btn-danger mt-4" onclick="deleteExhibition('${existing.id}')">删除展会</button>` : ''}
+  `;
+}
+
+async function saveExhibition(existingId) {
+  const name = document.getElementById('exName').value.trim();
+  if (!name) return showToast('请输入展会名称', 'error');
+  const data = {
+    id: existingId || genId(),
+    name,
+    location: document.getElementById('exLocation').value.trim(),
+    start_date: document.getElementById('exStart').value,
+    end_date: document.getElementById('exEnd').value,
+    description: document.getElementById('exDesc').value.trim(),
+    device_id: getDeviceId(),
+    created_at: existingId ? (await dbGet('exhibitions', existingId))?.created_at || new Date().toISOString() : new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  await dbPut('exhibitions', data);
+  showToast(existingId ? '已保存' : '展会已创建', 'success');
+  navigate('exhibition-detail', { id: data.id });
+}
+
+async function deleteExhibition(id) {
+  if (!confirm('确定删除此展会及其所有记录？此操作不可恢复。')) return;
+  const records = await dbGetAll('records', 'exhibition_id', id);
+  for (const r of records) await dbDelete('records', r.id);
+  await dbDelete('exhibitions', id);
+  showToast('已删除', 'success');
+  navigate('home');
+}
+
+// ====== PAGE: EXHIBITION DETAIL ======
+async function renderExhibitionDetail(params = {}) {
+  const ex = await dbGet('exhibitions', params.id);
+  if (!ex) return navigate('home');
+  currentExhibitionId = ex.id;
+  window._currentExhibition = ex;
+  setHeader(ex.name,
+    backBtn('home'),
+    `<button class="hdr-btn" onclick="renderNewExhibition(window._currentExhibition)">编辑</button>`
+  );
+  const records = await dbGetAll('records', 'exhibition_id', ex.id);
+  records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const photos = records.filter(r => r.type === 'photo');
+  const audios = records.filter(r => r.type === 'audio');
+  const videos = records.filter(r => r.type === 'video');
+  const notes = records.filter(r => r.type === 'note');
+
+  const html = `
+    <div class="card" style="cursor:default">
+      <div class="card-sub">📍 ${escHtml(ex.location || '未设置')}</div>
+      <div class="card-sub">📅 ${formatDate(ex.start_date)} ~ ${formatDate(ex.end_date)}</div>
+      ${ex.description ? `<p class="text-sm mt-2" style="color:var(--text2)">${escHtml(ex.description)}</p>` : ''}
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num">${photos.length}</div><div class="stat-label">照片</div></div>
+      <div class="stat-box"><div class="stat-num">${audios.length}</div><div class="stat-label">录音</div></div>
+      <div class="stat-box"><div class="stat-num">${videos.length}</div><div class="stat-label">录像</div></div>
+      <div class="stat-box"><div class="stat-num">${notes.length}</div><div class="stat-label">笔记</div></div>
+    </div>
+    <div class="btn-row mb-4">
+      <button class="btn btn-primary" onclick="navigate('capture',{exhibitionId:'${ex.id}'})">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+        添加记录
+      </button>
+      <button class="btn btn-secondary" onclick="navigate('export',{exhibitionId:'${ex.id}'})">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        导出报告
+      </button>
+    </div>
+    ${records.length ? '<div class="section-title">全部记录</div>' + records.map(r => recordItemHtml(r)).join('') : '<div class="empty"><p>暂无记录，点击"添加记录"开始</p></div>'}
+  `;
+  document.getElementById('main').innerHTML = html;
+}
+
+function recordItemHtml(r) {
+  const iconMap = { photo: 'photo', audio: 'audio', video: 'video', note: 'note' };
+  const emojiMap = { photo: '📷', audio: '🎙', video: '🎬', note: '📝' };
+  const typeNameMap = { photo: '照片', audio: '录音', video: '录像', note: '交流记录' };
+  let thumb = '';
+  if (r.type === 'photo' && r.data) thumb = `<img class="ri-thumb" src="${r.data}" onclick="event.stopPropagation();showLightbox('${r.data.replace(/'/g, "\\'")}')">`;
+  if (r.type === 'video' && r.data) thumb = `<div class="ri-thumb" style="background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px" onclick="event.stopPropagation();showLightbox('${r.data.replace(/'/g, "\\'")}',true)">▶️</div>`;
+  return `<div class="record-item" onclick="showRecordDetail('${r.id}')">
+    <div class="ri-icon ${iconMap[r.type]}">${emojiMap[r.type]}</div>
+    <div class="ri-body">
+      <div class="ri-title">${escHtml(r.title || typeNameMap[r.type])}</div>
+      <div class="ri-desc">${escHtml(r.text || r.transcript || '').substring(0, 100)}</div>
+      <div class="ri-time">${formatDateTime(r.created_at)}</div>
+    </div>
+    ${thumb}
+  </div>`;
+}
+
+async function showRecordDetail(id) {
+  const r = await dbGet('records', id);
+  if (!r) return;
+  const typeNameMap = { photo: '照片', audio: '录音', video: '录像', note: '交流记录' };
+  let mediaHtml = '';
+  if (r.type === 'photo' && r.data) mediaHtml = `<img src="${r.data}" style="width:100%;border-radius:8px;margin:12px 0;cursor:pointer" onclick="showLightbox('${r.data.replace(/'/g, "\\'")}')">`;
+  if (r.type === 'video' && r.data) mediaHtml = `<video src="${r.data}" controls style="width:100%;border-radius:8px;margin:12px 0"></video>`;
+  if (r.type === 'audio' && r.data) mediaHtml = `<audio src="${r.data}" controls style="width:100%;margin:12px 0"></audio>`;
+
+  showModal(`
+    <h3>${escHtml(r.title || typeNameMap[r.type])}</h3>
+    <p class="text-sm text-muted">${formatDateTime(r.created_at)}</p>
+    ${mediaHtml}
+    ${r.text ? `<div style="margin:12px 0"><div class="form-label">内容</div><p class="text-sm">${escHtml(r.text)}</p></div>` : ''}
+    ${r.transcript ? `<div style="margin:12px 0"><div class="form-label">语音转文字</div><p class="text-sm">${escHtml(r.transcript)}</p></div>` : ''}
+    ${r.contact ? `<div style="margin:12px 0"><div class="form-label">联系信息</div><p class="text-sm">${escHtml(r.contact)}</p></div>` : ''}
+    ${r.company ? `<div style="margin:12px 0"><div class="form-label">公司</div><p class="text-sm">${escHtml(r.company)}</p></div>` : ''}
+    ${r.tags ? `<div style="margin:12px 0"><div class="form-label">标签</div><p class="text-sm">${escHtml(r.tags)}</p></div>` : ''}
+    <div class="btn-row mt-4">
+      <button class="btn btn-secondary btn-sm" onclick="editRecord('${r.id}')">编辑</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}')">删除</button>
+    </div>
+  `);
+}
+
+async function deleteRecord(id) {
+  if (!confirm('确定删除？')) return;
+  const r = await dbGet('records', id);
+  await dbDelete('records', id);
+  closeModal();
+  showToast('已删除', 'success');
+  if (currentExhibitionId) navigate('exhibition-detail', { id: currentExhibitionId });
+  else navigate('records');
+}
+
+async function editRecord(id) {
+  closeModal();
+  const r = await dbGet('records', id);
+  if (!r) return;
+  showModal(`
+    <h3>编辑记录</h3>
+    <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="editTitle" value="${escHtml(r.title || '')}"></div>
+    <div class="form-group"><label class="form-label">内容</label><textarea class="form-input" id="editText">${escHtml(r.text || r.transcript || '')}</textarea></div>
+    <div class="form-group"><label class="form-label">公司</label><input class="form-input" id="editCompany" value="${escHtml(r.company || '')}"></div>
+    <div class="form-group"><label class="form-label">联系方式</label><input class="form-input" id="editContact" value="${escHtml(r.contact || '')}"></div>
+    <div class="form-group"><label class="form-label">标签(逗号分隔)</label><input class="form-input" id="editTags" value="${escHtml(r.tags || '')}"></div>
+    <button class="btn btn-primary mt-2" onclick="saveRecordEdit('${r.id}')">保存</button>
+  `);
+}
+
+async function saveRecordEdit(id) {
+  const r = await dbGet('records', id);
+  r.title = document.getElementById('editTitle').value.trim();
+  const newText = document.getElementById('editText').value.trim();
+  if (r.type === 'audio') r.transcript = newText;
+  else r.text = newText;
+  r.company = document.getElementById('editCompany').value.trim();
+  r.contact = document.getElementById('editContact').value.trim();
+  r.tags = document.getElementById('editTags').value.trim();
+  r.updated_at = new Date().toISOString();
+  await dbPut('records', r);
+  closeModal();
+  showToast('已保存', 'success');
+  if (currentExhibitionId) navigate('exhibition-detail', { id: currentExhibitionId });
+}
+
+// ====== PAGE: CAPTURE ======
+async function renderCapture(params = {}) {
+  const exId = params.exhibitionId || currentExhibitionId;
+  if (!exId) {
+    const exhibitions = await dbGetAll('exhibitions');
+    if (!exhibitions.length) {
+      showToast('请先创建展会', 'error');
+      return navigate('exhibitions', { action: 'new' });
+    }
+    return showExhibitionPicker('capture');
+  }
+  currentExhibitionId = exId;
+  const ex = await dbGet('exhibitions', exId);
+  setHeader('添加记录', backBtn('exhibition-detail', {id: exId}));
+  const tab = params.tab || 'photo';
+
+  document.getElementById('main').innerHTML = `
+    <div class="capture-tabs">
+      <div class="capture-tab ${tab==='photo'?'active':''}" onclick="navigate('capture',{exhibitionId:'${exId}',tab:'photo'})">📷 拍照</div>
+      <div class="capture-tab ${tab==='audio'?'active':''}" onclick="navigate('capture',{exhibitionId:'${exId}',tab:'audio'})">🎙 录音</div>
+      <div class="capture-tab ${tab==='video'?'active':''}" onclick="navigate('capture',{exhibitionId:'${exId}',tab:'video'})">🎬 录像</div>
+      <div class="capture-tab ${tab==='note'?'active':''}" onclick="navigate('capture',{exhibitionId:'${exId}',tab:'note'})">📝 记录</div>
+    </div>
+    <div id="captureContent"></div>
+  `;
+
+  switch (tab) {
+    case 'photo': renderPhotoCapture(exId); break;
+    case 'audio': renderAudioCapture(exId); break;
+    case 'video': renderVideoCapture(exId); break;
+    case 'note': renderNoteCapture(exId); break;
+  }
+}
+
+function showExhibitionPicker(nextPage) {
+  dbGetAll('exhibitions').then(exhibitions => {
+    showModal(`
+      <h3>选择展会</h3>
+      ${exhibitions.map(e => `<div class="card" onclick="closeModal();navigate('${nextPage}',{exhibitionId:'${e.id}'})"><div class="card-title">${escHtml(e.name)}</div><div class="card-sub">${formatDate(e.start_date)} ~ ${formatDate(e.end_date)}</div></div>`).join('')}
+    `);
+  });
+}
+
+// Photo Capture
+async function renderPhotoCapture(exId) {
+  const el = document.getElementById('captureContent');
+  el.innerHTML = `
+    <div class="capture-area" id="photoArea">
+      <video id="photoPreview" autoplay playsinline muted style="display:none"></video>
+      <canvas id="photoCanvas" style="display:none"></canvas>
+      <img id="photoResult" style="display:none;width:100%;border-radius:8px">
+      <p class="text-muted text-sm" id="photoPlaceholder">点击下方按钮开启相机</p>
+    </div>
+    <div class="capture-controls">
+      <button class="btn btn-secondary btn-sm" id="photoFileBtn" style="width:auto">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        相册
+      </button>
+      <button class="cap-btn" id="photoCaptureBtn" onclick="capturePhoto()"><div class="cap-btn-inner" style="background:var(--primary)"></div></button>
+      <button class="btn btn-secondary btn-sm" id="switchCamBtn" onclick="switchCamera()" style="width:auto">🔄 切换</button>
+    </div>
+    <input type="file" id="photoFile" accept="image/*" style="display:none">
+    <div id="photoSaveArea" class="hidden mt-4">
+      <div class="form-group"><label class="form-label">备注</label><input class="form-input" id="photoNote" placeholder="照片说明..."></div>
+      <div class="form-group"><label class="form-label">公司/展商</label><input class="form-input" id="photoCompany" placeholder="可选"></div>
+      <button class="btn btn-primary" onclick="savePhoto('${exId}')">保存照片</button>
+    </div>
+  `;
+  document.getElementById('photoFileBtn').onclick = () => document.getElementById('photoFile').click();
+  document.getElementById('photoFile').onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('photoResult').src = ev.target.result;
+      document.getElementById('photoResult').style.display = 'block';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('photoPlaceholder').style.display = 'none';
+      document.getElementById('photoSaveArea').classList.remove('hidden');
+      window._capturedPhotoData = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  startCamera('photoPreview');
+}
+
+let currentFacingMode = 'environment';
+async function startCamera(videoElId) {
+  try {
+    stopAllMedia();
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    const video = document.getElementById(videoElId);
+    if (video) {
+      video.srcObject = mediaStream;
+      video.style.display = 'block';
+      document.getElementById('photoPlaceholder')?.remove();
+    }
+  } catch (e) {
+    showToast('无法访问相机: ' + e.message, 'error');
+  }
+}
+
+function switchCamera() {
+  currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+  startCamera('photoPreview');
+}
+
+function capturePhoto() {
+  const video = document.getElementById('photoPreview');
+  if (!video || !video.srcObject) return showToast('请先开启相机', 'error');
+  const canvas = document.getElementById('photoCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  document.getElementById('photoResult').src = dataUrl;
+  document.getElementById('photoResult').style.display = 'block';
+  document.getElementById('photoSaveArea').classList.remove('hidden');
+  window._capturedPhotoData = dataUrl;
+  stopAllMedia();
+  video.style.display = 'none';
+}
+
+async function savePhoto(exId) {
+  if (!window._capturedPhotoData) return showToast('请先拍照', 'error');
+  const record = {
+    id: genId(), exhibition_id: exId, type: 'photo',
+    title: document.getElementById('photoNote').value.trim() || '照片',
+    text: document.getElementById('photoNote').value.trim(),
+    company: document.getElementById('photoCompany').value.trim(),
+    data: window._capturedPhotoData,
+    created_at: new Date().toISOString(), device_id: getDeviceId()
+  };
+  await dbPut('records', record);
+  window._capturedPhotoData = null;
+  showToast('照片已保存', 'success');
+  navigate('capture', { exhibitionId: exId, tab: 'photo' });
+}
+
+// Audio Capture
+async function renderAudioCapture(exId) {
+  const el = document.getElementById('captureContent');
+  el.innerHTML = `
+    <div class="capture-area" style="min-height:200px">
+      <div id="audioStatus" class="text-muted text-sm">点击按钮开始录音</div>
+      <div id="audioTimer" class="rec-timer hidden">00:00</div>
+      <div id="audioWaveform" class="waveform hidden">
+        ${Array.from({length:30},(_,i)=>`<div class="bar" style="animation-delay:${i*0.05}s"></div>`).join('')}
+      </div>
+      <audio id="audioResult" controls style="display:none;width:90%;margin-top:12px"></audio>
+    </div>
+    <div id="speechText" class="hidden" style="margin-top:12px">
+      <div class="form-label">语音识别文字</div>
+      <div id="speechContent" class="ai-bubble" style="max-height:100px;overflow-y:auto;font-size:13px"></div>
+    </div>
+    <div class="capture-controls">
+      <button class="cap-btn" id="audioRecBtn" onclick="toggleAudioRecording('${exId}')"><div class="cap-btn-inner"></div></button>
+    </div>
+    <div id="audioSaveArea" class="hidden mt-4">
+      <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="audioTitle" placeholder="录音标题"></div>
+      <div class="form-group"><label class="form-label">交流对象/公司</label><input class="form-input" id="audioCompany" placeholder="可选"></div>
+      <div class="form-group"><label class="form-label">语音转文字（可编辑）</label><textarea class="form-input" id="audioTranscript"></textarea></div>
+      <button class="btn btn-primary" onclick="saveAudio('${exId}')">保存录音</button>
+    </div>
+  `;
+}
+
+let speechRecognition = null;
+let speechFullText = '';
+
+function toggleAudioRecording(exId) {
+  const btn = document.getElementById('audioRecBtn');
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    // Stop
+    mediaRecorder.stop();
+    if (speechRecognition) { speechRecognition.stop(); speechRecognition = null; }
+    btn.classList.remove('recording');
+    clearInterval(recordingTimer);
+    document.getElementById('audioWaveform').classList.add('hidden');
+    document.getElementById('audioStatus').textContent = '录音完成';
+    return;
+  }
+  // Start
+  audioChunks = [];
+  recordingSeconds = 0;
+  speechFullText = '';
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    mediaStream = stream;
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      document.getElementById('audioResult').src = url;
+      document.getElementById('audioResult').style.display = 'block';
+      document.getElementById('audioSaveArea').classList.remove('hidden');
+      document.getElementById('audioTranscript').value = speechFullText;
+      window._capturedAudioData = blobToBase64(blob);
+      stopAllMedia();
+    };
+    mediaRecorder.start(1000);
+    btn.classList.add('recording');
+    document.getElementById('audioTimer').classList.remove('hidden');
+    document.getElementById('audioWaveform').classList.remove('hidden');
+    document.getElementById('audioStatus').textContent = '正在录音...';
+    recordingTimer = setInterval(() => {
+      recordingSeconds++;
+      document.getElementById('audioTimer').textContent = formatDuration(recordingSeconds);
+    }, 1000);
+    // Start speech recognition
+    speechRecognition = startSpeechRecognition((text, isFinal) => {
+      document.getElementById('speechText').classList.remove('hidden');
+      document.getElementById('speechContent').textContent = text;
+      if (isFinal) speechFullText = text;
+    });
+  }).catch(e => showToast('无法访问麦克风: ' + e.message, 'error'));
+}
+
+function blobToBase64(blob) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function saveAudio(exId) {
+  const audioData = await window._capturedAudioData;
+  if (!audioData) return showToast('请先录音', 'error');
+  const record = {
+    id: genId(), exhibition_id: exId, type: 'audio',
+    title: document.getElementById('audioTitle').value.trim() || '录音',
+    transcript: document.getElementById('audioTranscript').value.trim(),
+    company: document.getElementById('audioCompany').value.trim(),
+    data: audioData,
+    duration: recordingSeconds,
+    created_at: new Date().toISOString(), device_id: getDeviceId()
+  };
+  await dbPut('records', record);
+  showToast('录音已保存', 'success');
+  navigate('capture', { exhibitionId: exId, tab: 'audio' });
+}
+
+// Video Capture
+async function renderVideoCapture(exId) {
+  const el = document.getElementById('captureContent');
+  el.innerHTML = `
+    <div class="capture-area" id="videoArea">
+      <video id="videoPreview" autoplay playsinline muted style="display:none"></video>
+      <video id="videoResult" controls style="display:none;width:100%"></video>
+      <p class="text-muted text-sm" id="videoPlaceholder">点击按钮开始录像</p>
+      <div id="videoTimer" class="rec-timer hidden" style="position:absolute;top:12px;right:12px">00:00</div>
+    </div>
+    <div class="capture-controls">
+      <button class="cap-btn" id="videoRecBtn" onclick="toggleVideoRecording('${exId}')"><div class="cap-btn-inner"></div></button>
+    </div>
+    <div id="videoSaveArea" class="hidden mt-4">
+      <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="videoTitle" placeholder="录像标题"></div>
+      <div class="form-group"><label class="form-label">备注</label><input class="form-input" id="videoNote" placeholder="可选"></div>
+      <button class="btn btn-primary" onclick="saveVideo('${exId}')">保存录像</button>
+    </div>
+  `;
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
+    const video = document.getElementById('videoPreview');
+    video.srcObject = mediaStream;
+    video.style.display = 'block';
+    document.getElementById('videoPlaceholder').style.display = 'none';
+  } catch (e) {
+    showToast('无法访问相机: ' + e.message, 'error');
+  }
+}
+
+function toggleVideoRecording(exId) {
+  const btn = document.getElementById('videoRecBtn');
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    btn.classList.remove('recording');
+    clearInterval(recordingTimer);
+    document.getElementById('videoTimer').classList.add('hidden');
+    return;
+  }
+  audioChunks = [];
+  recordingSeconds = 0;
+  if (!mediaStream) return showToast('相机未就绪', 'error');
+  mediaRecorder = new MediaRecorder(mediaStream, { mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm' });
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(audioChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    document.getElementById('videoResult').src = url;
+    document.getElementById('videoResult').style.display = 'block';
+    document.getElementById('videoPreview').style.display = 'none';
+    document.getElementById('videoSaveArea').classList.remove('hidden');
+    window._capturedVideoData = blobToBase64(blob);
+    stopAllMedia();
+  };
+  mediaRecorder.start(1000);
+  btn.classList.add('recording');
+  document.getElementById('videoTimer').classList.remove('hidden');
+  recordingTimer = setInterval(() => {
+    recordingSeconds++;
+    document.getElementById('videoTimer').textContent = formatDuration(recordingSeconds);
+  }, 1000);
+}
+
+async function saveVideo(exId) {
+  const videoData = await window._capturedVideoData;
+  if (!videoData) return showToast('请先录像', 'error');
+  const record = {
+    id: genId(), exhibition_id: exId, type: 'video',
+    title: document.getElementById('videoTitle').value.trim() || '录像',
+    text: document.getElementById('videoNote').value.trim(),
+    data: videoData,
+    duration: recordingSeconds,
+    created_at: new Date().toISOString(), device_id: getDeviceId()
+  };
+  await dbPut('records', record);
+  showToast('录像已保存', 'success');
+  navigate('capture', { exhibitionId: exId, tab: 'video' });
+}
+
+// Note Capture
+function renderNoteCapture(exId) {
+  const el = document.getElementById('captureContent');
+  el.innerHTML = `
+    <div class="form-group"><label class="form-label">交流对象/公司名称</label><input class="form-input" id="noteCompany" placeholder="公司或个人名称"></div>
+    <div class="form-group"><label class="form-label">联系方式</label><input class="form-input" id="noteContact" placeholder="电话/邮箱/微信"></div>
+    <div class="form-group">
+      <div class="flex justify-between items-center">
+        <label class="form-label" style="margin-bottom:0">交流内容</label>
+        <button class="btn btn-sm btn-outline" style="width:auto;padding:4px 12px;font-size:12px" onclick="startNoteSpeech()">🎙 语音输入</button>
+      </div>
+      <textarea class="form-input mt-2" id="noteText" placeholder="交流要点、产品信息、合作意向..." style="min-height:150px"></textarea>
+    </div>
+    <div class="form-group"><label class="form-label">标签</label><input class="form-input" id="noteTags" placeholder="例：潜在客户,新技术,供应商"></div>
+    <div class="form-group">
+      <label class="form-label">附加照片（可选）</label>
+      <input type="file" id="notePhoto" accept="image/*" class="form-input" style="padding:8px">
+    </div>
+    <button class="btn btn-primary" onclick="saveNote('${exId}')">保存记录</button>
+    <div id="noteSpeechStatus" class="hidden mt-2 text-sm text-muted" style="text-align:center">🎙 正在听写...</div>
+  `;
+}
+
+let noteSpeechRecognition = null;
+function startNoteSpeech() {
+  if (noteSpeechRecognition) {
+    noteSpeechRecognition.stop();
+    noteSpeechRecognition = null;
+    document.getElementById('noteSpeechStatus').classList.add('hidden');
+    return;
+  }
+  document.getElementById('noteSpeechStatus').classList.remove('hidden');
+  noteSpeechRecognition = startSpeechRecognition((text, isFinal) => {
+    document.getElementById('noteText').value = text;
+  });
+  if (!noteSpeechRecognition) document.getElementById('noteSpeechStatus').classList.add('hidden');
+}
+
+async function saveNote(exId) {
+  const text = document.getElementById('noteText').value.trim();
+  if (!text) return showToast('请输入交流内容', 'error');
+  let photoData = null;
+  const photoFile = document.getElementById('notePhoto').files[0];
+  if (photoFile) {
+    photoData = await new Promise(resolve => { const r = new FileReader(); r.onload = e => resolve(e.target.result); r.readAsDataURL(photoFile); });
+  }
+  if (noteSpeechRecognition) { noteSpeechRecognition.stop(); noteSpeechRecognition = null; }
+  const record = {
+    id: genId(), exhibition_id: exId, type: 'note',
+    title: document.getElementById('noteCompany').value.trim() || '交流记录',
+    text,
+    company: document.getElementById('noteCompany').value.trim(),
+    contact: document.getElementById('noteContact').value.trim(),
+    tags: document.getElementById('noteTags').value.trim(),
+    data: photoData,
+    created_at: new Date().toISOString(), device_id: getDeviceId()
+  };
+  await dbPut('records', record);
+  showToast('记录已保存', 'success');
+  navigate('capture', { exhibitionId: exId, tab: 'note' });
+}
+
+// ====== PAGE: RECORDS ======
+async function renderRecords() {
+  setHeader('全部记录');
+  const records = await dbGetAll('records');
+  records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  if (!records.length) {
+    document.getElementById('main').innerHTML = '<div class="empty"><p>暂无记录</p></div>';
+    return;
+  }
+  const exhibitions = await dbGetAll('exhibitions');
+  const exMap = {};
+  exhibitions.forEach(e => exMap[e.id] = e.name);
+
+  // Group by date
+  const grouped = {};
+  records.forEach(r => {
+    const d = formatDate(r.created_at);
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(r);
+  });
+
+  let html = `<div class="form-group"><input class="form-input" id="recordSearch" placeholder="搜索记录..." oninput="filterRecords()"></div>`;
+  html += '<div id="recordsList">';
+  for (const [date, recs] of Object.entries(grouped)) {
+    html += `<div class="section-title">${date}</div>`;
+    recs.forEach(r => {
+      html += `<div class="record-search-item" data-search="${escHtml((r.title||'')+(r.text||'')+(r.transcript||'')+(r.company||'')+(r.tags||'')).toLowerCase()}">${recordItemHtml(r)}</div>`;
+    });
+  }
+  html += '</div>';
+  document.getElementById('main').innerHTML = html;
+}
+
+function filterRecords() {
+  const q = document.getElementById('recordSearch').value.toLowerCase();
+  document.querySelectorAll('.record-search-item').forEach(el => {
+    el.style.display = !q || el.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+
+// ====== PAGE: SETTINGS ======
+function renderSettings() {
+  setHeader('设置');
+  const cfg = getAIConfig();
+  document.getElementById('main').innerHTML = `
+    <div class="section-title">AI 配置</div>
+    <div class="card" style="cursor:default">
+      <div class="form-group"><label class="form-label">AI API地址</label><input class="form-input" id="aiUrl" value="${escHtml(cfg.url)}" placeholder="https://api.siliconflow.cn/v1/chat/completions"></div>
+      <div class="form-group"><label class="form-label">API Key</label><input class="form-input" id="aiKey" type="password" value="${escHtml(cfg.key)}" placeholder="sk-..."></div>
+      <div class="form-group"><label class="form-label">模型名称</label><input class="form-input" id="aiModel" value="${escHtml(cfg.model)}" placeholder="Qwen/Qwen2.5-7B-Instruct"></div>
+      <p class="text-sm text-muted mb-2">推荐使用 SiliconFlow 免费API，注册即可获取Key。支持任何兼容 OpenAI 格式的 API。</p>
+      <button class="btn btn-primary btn-sm" onclick="saveAIConfig()">保存配置</button>
+      <button class="btn btn-secondary btn-sm mt-2" onclick="testAI()">测试连接</button>
+    </div>
+
+    <div class="section-title">数据管理</div>
+    <div class="card" style="cursor:default">
+      <div class="setting-item">
+        <div><div class="setting-label">设备ID</div><div class="setting-desc">${getDeviceId()}</div></div>
+      </div>
+      <div class="setting-item">
+        <div><div class="setting-label">导出所有数据</div><div class="setting-desc">将所有展会和记录导出为JSON备份</div></div>
+        <button class="btn btn-secondary btn-sm" style="width:auto" onclick="exportAllData()">导出</button>
+      </div>
+      <div class="setting-item">
+        <div><div class="setting-label">导入数据</div><div class="setting-desc">从JSON备份恢复数据</div></div>
+        <button class="btn btn-secondary btn-sm" style="width:auto" onclick="document.getElementById('importFile').click()">导入</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="setting-item">
+        <div><div class="setting-label text-danger">清除所有数据</div><div class="setting-desc">删除本设备上的所有数据</div></div>
+        <button class="btn btn-danger btn-sm" style="width:auto" onclick="clearAllData()">清除</button>
+      </div>
+    </div>
+
+    <div class="section-title">关于</div>
+    <div class="card" style="cursor:default">
+      <p class="text-sm"><strong>展记</strong> v1.0</p>
+      <p class="text-sm text-muted mt-2">专业展会记录与管理PWA应用。支持拍照、录音、录像、交流记录及AI智能分析导出。</p>
+      <p class="text-sm text-muted mt-2">数据存储于本地设备，无需注册登录。</p>
+    </div>
+  `;
+}
+
+function saveAIConfig() {
+  localStorage.setItem('zj_ai_url', document.getElementById('aiUrl').value.trim());
+  localStorage.setItem('zj_ai_key', document.getElementById('aiKey').value.trim());
+  localStorage.setItem('zj_ai_model', document.getElementById('aiModel').value.trim());
+  showToast('AI配置已保存', 'success');
+}
+
+async function testAI() {
+  try {
+    saveAIConfig();
+    showLoading('正在测试AI连接...');
+    const result = await callAI('你好，请用一句话回复确认连接成功。');
+    hideLoading();
+    showToast('连接成功: ' + result.substring(0, 50), 'success');
+  } catch (e) {
+    hideLoading();
+    showToast(e.message, 'error');
+  }
+}
+
+async function exportAllData() {
+  const exhibitions = await dbGetAll('exhibitions');
+  const records = await dbGetAll('records');
+  const data = JSON.stringify({ exhibitions, records, exported_at: new Date().toISOString() });
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '展记备份_' + formatDate(new Date()) + '.json';
+  a.click();
+  showToast('数据已导出', 'success');
+}
+
+async function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  try {
+    const data = JSON.parse(text);
+    if (data.exhibitions) for (const ex of data.exhibitions) await dbPut('exhibitions', ex);
+    if (data.records) for (const r of data.records) await dbPut('records', r);
+    showToast('数据已导入', 'success');
+    navigate('home');
+  } catch (err) { showToast('导入失败: 无效文件', 'error'); }
+}
+
+async function clearAllData() {
+  if (!confirm('确定清除所有数据？此操作不可恢复！')) return;
+  if (!confirm('再次确认：删除所有展会和记录？')) return;
+  const exhibitions = await dbGetAll('exhibitions');
+  const records = await dbGetAll('records');
+  for (const e of exhibitions) await dbDelete('exhibitions', e.id);
+  for (const r of records) await dbDelete('records', r.id);
+  showToast('数据已清除', 'success');
+  navigate('home');
+}
+
+// ====== PAGE: EXPORT ======
+async function renderExport(params = {}) {
+  const exId = params.exhibitionId || currentExhibitionId;
+  if (!exId) return showExhibitionPicker('export');
+  currentExhibitionId = exId;
+  const ex = await dbGet('exhibitions', exId);
+  if (!ex) return navigate('home');
+  setHeader('导出报告', backBtn('exhibition-detail', {id: exId}));
+
+  // Get unique dates
+  const records = await dbGetAll('records', 'exhibition_id', exId);
+  const dates = [...new Set(records.map(r => formatDate(r.created_at)))].sort();
+
+  document.getElementById('main').innerHTML = `
+    <div class="card" style="cursor:default">
+      <div class="card-title">${escHtml(ex.name)}</div>
+      <div class="card-sub">${formatDate(ex.start_date)} ~ ${formatDate(ex.end_date)}</div>
+      <div class="card-sub">${records.length} 条记录</div>
+    </div>
+
+    <div class="export-card" onclick="generateDailyReport('${exId}')">
+      <div class="flex items-center gap-2">
+        <span style="font-size:28px">📋</span>
+        <div>
+          <h4>参展日报</h4>
+          <p>按日生成当天参展记录报告，含AI总结、交流记录和合作机会分析</p>
+        </div>
+      </div>
+      ${dates.length ? `<div class="mt-2"><select class="form-input" id="dailyDate" onclick="event.stopPropagation()" style="padding:8px;font-size:13px">${dates.map(d => `<option value="${d}">${d}</option>`).join('')}</select></div>` : '<p class="text-sm text-muted mt-2">暂无记录数据</p>'}
+    </div>
+
+    <div class="export-card" onclick="generateSummaryReport('${exId}')">
+      <div class="flex items-center gap-2">
+        <span style="font-size:28px">📊</span>
+        <div>
+          <h4>展会总结</h4>
+          <p>生成完整展会总结报告，含AI综合分析、全部记录和合作机会TO DO LIST</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-bubble mt-4">
+      <div class="ai-label">💡 报告内容说明</div>
+      <p><strong>第一部分：</strong>AI智能总结 - 基于当日/全展内容自动生成总结</p>
+      <p><strong>第二部分：</strong>详细记录 - 语音转文字、交流记录、图片按时间顺序排列</p>
+      <p><strong>第三部分：</strong>AI分析 - 合作机会筛选及TO DO LIST</p>
+    </div>
+  `;
+}
+
+// ====== WORD EXPORT ENGINE ======
+async function generateDailyReport(exId) {
+  const ex = await dbGet('exhibitions', exId);
+  const dateSelect = document.getElementById('dailyDate');
+  if (!dateSelect) return showToast('暂无可导出的记录', 'error');
+  const selectedDate = dateSelect.value;
+  const allRecords = await dbGetAll('records', 'exhibition_id', exId);
+  const records = allRecords.filter(r => formatDate(r.created_at) === selectedDate);
+  if (!records.length) return showToast('该日期无记录', 'error');
+  records.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  showLoading('正在生成参展日报...');
+  try {
+    const contentText = buildContentSummaryText(records);
+    let aiSummary = '（AI总结未生成 - 请在设置中配置AI API Key）';
+    let aiTodo = '（AI分析未生成 - 请在设置中配置AI API Key）';
+    try {
+      aiSummary = await callAI(`请为以下展会日报内容生成300字以内的总结，包含当天主要交流内容和收获要点：\n\n展会：${ex.name}\n日期：${selectedDate}\n地点：${ex.location}\n\n当日记录内容：\n${contentText}`);
+      aiTodo = await callAI(`基于以下展会交流记录，请筛选出有价值的合作机会，并生成一份TO DO LIST（包含：合作方名称、合作方向、跟进事项、优先级、建议截止日期）：\n\n展会：${ex.name}\n日期：${selectedDate}\n\n记录内容：\n${contentText}`);
+    } catch (e) { console.warn('AI call failed:', e); }
+
+    await buildWordReport({
+      title: `${ex.name} - 参展日报`,
+      subtitle: `${selectedDate} | ${ex.location || ''}`,
+      exhibition: ex,
+      aiSummary,
+      records,
+      aiTodo,
+      type: 'daily'
+    });
+    hideLoading();
+    showToast('日报已生成', 'success');
+  } catch (e) {
+    hideLoading();
+    showToast('生成失败: ' + e.message, 'error');
+  }
+}
+
+async function generateSummaryReport(exId) {
+  const ex = await dbGet('exhibitions', exId);
+  const records = await dbGetAll('records', 'exhibition_id', exId);
+  if (!records.length) return showToast('暂无可导出的记录', 'error');
+  records.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  showLoading('正在生成展会总结...');
+  try {
+    const contentText = buildContentSummaryText(records);
+    let aiSummary = '（AI总结未生成 - 请在设置中配置AI API Key）';
+    let aiTodo = '（AI分析未生成 - 请在设置中配置AI API Key）';
+    try {
+      aiSummary = await callAI(`请为以下展会生成一份500字以内的综合总结报告，涵盖参展整体收获、重要交流、行业趋势观察和建议：\n\n展会：${ex.name}\n时间：${formatDate(ex.start_date)} ~ ${formatDate(ex.end_date)}\n地点：${ex.location}\n描述：${ex.description}\n\n全部记录内容：\n${contentText}`);
+      aiTodo = await callAI(`基于以下展会全部交流记录，请全面筛选合作机会，生成详细的TO DO LIST（表格形式，包含：序号、合作方名称、合作方向/产品、跟进事项、优先级(高/中/低)、建议跟进日期、负责人建议）。同时给出整体合作策略建议：\n\n展会：${ex.name}\n\n记录内容：\n${contentText}`);
+    } catch (e) { console.warn('AI call failed:', e); }
+
+    await buildWordReport({
+      title: `${ex.name} - 展会总结报告`,
+      subtitle: `${formatDate(ex.start_date)} ~ ${formatDate(ex.end_date)} | ${ex.location || ''}`,
+      exhibition: ex,
+      aiSummary,
+      records,
+      aiTodo,
+      type: 'summary'
+    });
+    hideLoading();
+    showToast('总结报告已生成', 'success');
+  } catch (e) {
+    hideLoading();
+    showToast('生成失败: ' + e.message, 'error');
+  }
+}
+
+function buildContentSummaryText(records) {
+  return records.map(r => {
+    let text = `[${formatDateTime(r.created_at)}] `;
+    if (r.company) text += `【${r.company}】`;
+    if (r.title) text += r.title + ': ';
+    if (r.text) text += r.text;
+    if (r.transcript) text += '(语音记录) ' + r.transcript;
+    if (r.contact) text += ` | 联系方式: ${r.contact}`;
+    if (r.tags) text += ` | 标签: ${r.tags}`;
+    return text;
+  }).join('\n');
+}
+
+async function buildWordReport({ title, subtitle, exhibition, aiSummary, records, aiTodo, type }) {
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, ImageRun, Table, TableRow, TableCell, WidthType, PageBreak } = docx;
+
+  const children = [];
+
+  // Title
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 100 }, children: [new TextRun({ text: title, bold: true, size: 36, font: 'Microsoft YaHei' })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 300 }, children: [new TextRun({ text: subtitle, size: 22, color: '666666', font: 'Microsoft YaHei' })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 300 }, children: [new TextRun({ text: `生成时间：${formatDateTime(new Date())}`, size: 18, color: '999999', font: 'Microsoft YaHei' })] }));
+
+  // Part 1: AI Summary
+  children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 200 }, children: [new TextRun({ text: '第一部分：内容总结', bold: true, size: 28, font: 'Microsoft YaHei' })] }));
+  const summaryLines = aiSummary.split('\n');
+  for (const line of summaryLines) {
+    children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: line, size: 21, font: 'Microsoft YaHei' })] }));
+  }
+
+  // Part 2: Detailed Records
+  children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 200 }, children: [new TextRun({ text: '第二部分：详细记录', bold: true, size: 28, font: 'Microsoft YaHei' })] }));
+
+  // Group by date
+  const dateGroups = {};
+  records.forEach(r => {
+    const d = formatDate(r.created_at);
+    if (!dateGroups[d]) dateGroups[d] = [];
+    dateGroups[d].push(r);
+  });
+
+  for (const [date, dayRecords] of Object.entries(dateGroups)) {
+    if (type === 'summary') {
+      children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 }, children: [new TextRun({ text: date, bold: true, size: 24, font: 'Microsoft YaHei' })] }));
+    }
+    for (const r of dayRecords) {
+      const typeNameMap = { photo: '📷 照片', audio: '🎙 录音', video: '🎬 录像', note: '📝 交流记录' };
+      children.push(new Paragraph({ spacing: { before: 200, after: 50 }, children: [
+        new TextRun({ text: `${formatTime(r.created_at)} `, bold: true, size: 21, color: '3b82f6', font: 'Microsoft YaHei' }),
+        new TextRun({ text: `${typeNameMap[r.type] || r.type}`, bold: true, size: 21, font: 'Microsoft YaHei' }),
+        r.company ? new TextRun({ text: ` | ${r.company}`, size: 21, color: '666666', font: 'Microsoft YaHei' }) : new TextRun({ text: '' })
+      ]}));
+
+      if (r.title && r.title !== '照片' && r.title !== '录音' && r.title !== '录像' && r.title !== '交流记录') {
+        children.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: `标题：${r.title}`, size: 21, font: 'Microsoft YaHei' })] }));
+      }
+      if (r.text) {
+        children.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: r.text, size: 21, font: 'Microsoft YaHei' })] }));
+      }
+      if (r.transcript) {
+        children.push(new Paragraph({ spacing: { after: 50 }, children: [
+          new TextRun({ text: '语音转文字：', bold: true, size: 20, font: 'Microsoft YaHei' }),
+          new TextRun({ text: r.transcript, size: 20, italics: true, font: 'Microsoft YaHei' })
+        ]}));
+      }
+      if (r.contact) {
+        children.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: `联系方式：${r.contact}`, size: 20, color: '666666', font: 'Microsoft YaHei' })] }));
+      }
+      if (r.tags) {
+        children.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: `标签：${r.tags}`, size: 20, color: '999999', font: 'Microsoft YaHei' })] }));
+      }
+
+      // Include images
+      if (r.type === 'photo' && r.data && r.data.startsWith('data:image')) {
+        try {
+          const base64 = r.data.split(',')[1];
+          const imgBuf = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+          children.push(new Paragraph({ spacing: { after: 100 }, children: [
+            new ImageRun({ data: imgBuf, transformation: { width: 400, height: 300 }, type: 'jpg' })
+          ]}));
+        } catch (e) { console.warn('Image embed failed:', e); }
+      }
+      // Separator
+      children.push(new Paragraph({ spacing: { after: 100 }, border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: 'EEEEEE' }}, children: [new TextRun({ text: '' })] }));
+    }
+  }
+
+  // Part 3: AI TODO
+  children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 200 }, children: [new TextRun({ text: '第三部分：合作机会筛选及TO DO LIST', bold: true, size: 28, font: 'Microsoft YaHei' })] }));
+  const todoLines = aiTodo.split('\n');
+  for (const line of todoLines) {
+    children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: line, size: 21, font: 'Microsoft YaHei' })] }));
+  }
+
+  // Footer
+  children.push(new Paragraph({ spacing: { before: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: '— 由「展记」自动生成 —', size: 18, color: '999999', italics: true, font: 'Microsoft YaHei' })] }));
+
+  const doc = new Document({
+    sections: [{ properties: { page: { margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } } }, children }],
+    styles: { default: { document: { run: { font: 'Microsoft YaHei', size: 21 } } } }
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const fileName = type === 'daily'
+    ? `${exhibition.name}_日报_${document.getElementById('dailyDate')?.value || formatDate(new Date())}.docx`
+    : `${exhibition.name}_展会总结_${formatDate(new Date())}.docx`;
+  saveAs(blob, fileName);
+}
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
